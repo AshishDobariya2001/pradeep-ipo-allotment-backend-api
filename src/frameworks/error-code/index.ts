@@ -11,6 +11,10 @@ export const ERROR = {
     message: 'Invalid pan number',
     code: 'INVALID_PAN_NUMBER',
   },
+  IPO_ALLOTMENT_IS_NOT_AVAILABLE: {
+    message: 'ipo allotment is not available',
+    code: 'IPO_ALLOTMENT_IS_NOT_AVAILABLE',
+  },
 };
 export enum HttpStatusCode {
   Success = 200,

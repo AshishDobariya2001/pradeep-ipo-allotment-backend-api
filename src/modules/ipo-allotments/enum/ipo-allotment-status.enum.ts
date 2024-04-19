@@ -1,3 +1,5 @@
-export enum ipoAllotmentStatus {
-  NON_ALLOTTE = 'NON-ALLOTTE',
+export enum IpoAllotmentStatus {
+  NON_ALLOTTED = 'NON ALLOTTED',
+  ALLOTED = 'ALLOTED',
+  NOT_APPLIED = 'NOT APPLIED',
 }

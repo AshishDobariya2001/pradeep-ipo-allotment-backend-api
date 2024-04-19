@@ -25,6 +25,14 @@ export class IpoDetailsRepository {
     private contactRepository: Repository<Contacts>,
   ) {}
 
+  async findRegistrarList() {
+    return this.ipoRegistrarRepository.find({
+      where: {
+        isActive: true,
+      },
+      select: ['id', 'name', 'serverUrl'],
+    });
+  }
   async findUpcomingIPOs() {
     const currentDate = new Date();
     const futureIpoQuery = await this.ipoDetailsRepository
@@ -160,7 +168,7 @@ export class IpoDetailsRepository {
     });
   }
 
-  createAllotment(payload: Partial<AllotmentStatus>) {
+  async createAllotment(payload: Partial<AllotmentStatus>) {
     return this.ipoAllotmentsRepository.save(payload);
   }
 }

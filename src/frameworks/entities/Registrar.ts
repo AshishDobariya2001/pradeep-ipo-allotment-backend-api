@@ -13,4 +13,7 @@ export class Registrar {
 
   @Column('text', { name: 'allotment_url', nullable: true, array: true })
   allotmentUrl: string[] | null;
+
+  @Column('boolean', { name: 'is_active', nullable: true })
+  isActive: boolean;
 }

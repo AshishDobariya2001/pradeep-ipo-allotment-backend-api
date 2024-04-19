@@ -2,7 +2,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AllotmentBaseApiService } from 'src/connectors/allotment/allotment-base.api';
 import { IpoDetailsRepository } from '../repositories';
-import { IpoDetailsDto } from '../dto';
+import { IpoDataValidationDto, IpoDetailsDto } from '../dto';
 import cheerio from 'cheerio';
 import { Registrar } from 'src/frameworks/entities';
 import * as puppeteer from 'puppeteer';
@@ -12,6 +12,7 @@ import {
   SOLVE_CAPTCHA_API_KEY,
   SOLVE_CAPTCHA_USER_ID,
 } from 'src/frameworks/environment';
+import { IpoAllotmentStatus } from '../enum/ipo-allotment-status.enum';
 
 @Injectable()
 export class KFinTechService {
@@ -96,21 +97,18 @@ export class KFinTechService {
       await page.screenshot({ path: 'allotment-kFin-url-1.png' });
       await page.click('#btn_submit_query');
 
-      await page.waitForNavigation({
-        waitUntil: 'networkidle2',
-      });
+      await page.waitForNavigation();
       await page.screenshot({ path: 'allotment-kFin-url-2.png' });
 
       const htmlContent = await page.content();
 
       const extractedInfo = await this.extractAllotmentInfo(htmlContent);
-      console.log('🚀 ~ KFinTechService ~ extractedInfo:', extractedInfo);
       return {
-        allotmentStatus: extractedInfo.allotment_status,
-        name: extractedInfo.name,
+        allotmentStatus: extractedInfo.status,
+        name: extractedInfo.applicantName,
         data: extractedInfo,
-        appliedStock: extractedInfo.applied,
-        allotedStock: extractedInfo.alloted,
+        appliedStock: extractedInfo.appliedStock,
+        allotedStock: extractedInfo.allotedStock,
       };
     } catch (error) {
       Logger.log(`Error occurred for PAN ${pancard}:`, error);
@@ -119,7 +117,7 @@ export class KFinTechService {
       await browser.close();
     }
   }
-  async extractAllotmentInfo(htmlContent) {
+  async extractAllotmentInfo(htmlContent): Promise<IpoDataValidationDto> {
     const $ = cheerio.load(htmlContent);
 
     const applicationNumber = $('#grid_results_ctl02_l1').text().trim();
@@ -134,22 +132,22 @@ export class KFinTechService {
     const redBadge = $('#grid_results_ctl02_bdg_non_allottee .badge.bg-danger');
 
     if (greenBadge.length > 0) {
-      allotmentStatus = 'Allotted';
+      allotmentStatus = IpoAllotmentStatus.ALLOTED;
     } else if (redBadge.length > 0) {
-      allotmentStatus = 'Not Allotted';
+      allotmentStatus = IpoAllotmentStatus.NON_ALLOTTED;
     } else {
-      allotmentStatus = 'Not Applied';
+      allotmentStatus = IpoAllotmentStatus.NOT_APPLIED;
     }
 
     return {
-      application_number: applicationNumber,
+      applicationNumber: applicationNumber,
       category: category,
-      name: name,
-      client_id: clientId,
+      applicantName: name,
+      dpIp: clientId,
       pan: pan,
-      applied: applied,
-      alloted: alloted,
-      allotment_status: allotmentStatus,
+      appliedStock: applied,
+      allotedStock: alloted,
+      status: allotmentStatus,
     };
   }
 

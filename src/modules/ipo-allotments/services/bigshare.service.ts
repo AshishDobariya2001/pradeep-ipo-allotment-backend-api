@@ -3,11 +3,11 @@ import * as puppeteer from 'puppeteer';
 import { AllotmentBaseApiService } from 'src/connectors/allotment/allotment-base.api';
 import { IpoDetailsRepository } from '../repositories';
 import { RegistrarList } from '../enum';
-import { IpoDetailsDto } from '../dto';
-import { Contacts, Registrar } from 'src/frameworks/entities';
+import { IpoDataValidationDto, IpoDetailsDto } from '../dto';
+import { Registrar } from 'src/frameworks/entities';
 import { BusinessRuleException } from 'src/frameworks/exceptions';
 import { ERROR } from 'src/frameworks/error-code';
-import locateChrome from 'locate-chrome';
+import { IpoAllotmentStatus } from '../enum/ipo-allotment-status.enum';
 @Injectable()
 export class BigShareService {
   constructor(
@@ -20,16 +20,6 @@ export class BigShareService {
     const registrar = await this.ipoDetailsRepository.findIpoRegistrarByName(
       RegistrarList.BigShareServicesPvtLtd,
     );
-
-    // const executablePath: string =
-    //   (await new Promise((resolve) =>
-    //     locateChrome((arg: any) => resolve(arg)),
-    //   )) || '';
-
-    // console.log(
-    //   '🚀 ~ BigShareService ~ getAllotmentStatus ~ executablePath:',
-    //   executablePath,
-    // );
 
     const browser = await puppeteer.launch({
       headless: true,
@@ -61,14 +51,14 @@ export class BigShareService {
 
   async getUserAllotmentStatus(
     registrar: Registrar,
-    pancard: string,
+    panNumber: string,
     ipoAllotmentRequiredPayload,
   ) {
     const payload = {
       Applicationno: '',
       Company: ipoAllotmentRequiredPayload.ipo_code,
       SelectionType: 'PN',
-      PanNo: pancard,
+      PanNo: panNumber,
       txtcsdl: '',
       txtDPID: '',
       txtClId: '',
@@ -79,11 +69,14 @@ export class BigShareService {
       try {
         const response = await this.ipoAllotmentApi.post(url, payload);
         if (response) {
+          const responseData = await this.parseAllotmentData(response['d']);
           return {
             allotmentStatus: response['d'].ALLOTED,
             name: response['d'].Name,
-            data: response['d'],
+            data: responseData,
             appliedStock: response['d'].APPLIED,
+            allotedStock: response['d'].ALLOTED,
+            status: responseData.status,
           };
         }
       } catch (error) {
@@ -92,5 +85,24 @@ export class BigShareService {
     }
 
     throw new BusinessRuleException(ERROR.UNABLE_TO_FETCH_ALLOTMENT_STATUS);
+  }
+  async parseAllotmentData(response): Promise<IpoDataValidationDto> {
+    let status: IpoAllotmentStatus;
+    if (response['APPLICATION_NO'] === '') {
+      status = IpoAllotmentStatus.NOT_APPLIED;
+    } else if (parseInt(response['ALLOTED']) > 0) {
+      status = IpoAllotmentStatus.ALLOTED;
+    } else {
+      status = IpoAllotmentStatus.NON_ALLOTTED;
+    }
+    const data: IpoDataValidationDto = {
+      applicationNumber: response['APPLICATION_NO'],
+      dpIp: response['DPID'],
+      applicantName: response['Name'],
+      appliedStock: response['APPLIED'],
+      allotedStock: response['ALLOTED'],
+      status: status,
+    };
+    return data;
   }
 }

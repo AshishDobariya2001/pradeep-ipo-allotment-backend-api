@@ -4,16 +4,10 @@ import {
   Get,
   HttpCode,
   Param,
-  ParseIntPipe,
   Post,
   Query,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiHeader,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { IpoAllotmentService } from '../services';
 import {
   AddPanCardDto,
@@ -21,9 +15,8 @@ import {
   GetIpoListDto,
   IpoAllotmentContactDto,
 } from '../dto';
-import { AllotmentStatus, Contacts } from 'src/frameworks/entities';
+import { AllotmentStatus, Registrar } from 'src/frameworks/entities';
 import { GetContactResponseDto } from '../models';
-import { IpoType } from '../enum';
 
 @ApiTags('company allotment')
 @ApiHeader({
@@ -66,8 +59,15 @@ export class AllotmentController {
 
   @ApiOperation({ summary: 'ipo list sme + mainline' })
   @HttpCode(200)
-  @Get('ipo')
+  @Get('compnay/ipo')
   async getIpoList(@Query() body: GetIpoListDto) {
     return this.ipoAllotmentService.getIpoList(body);
+  }
+
+  @ApiOperation({ summary: 'get registrar list' })
+  @HttpCode(200)
+  @Get('company/registrar')
+  async getRegistrar(): Promise<Registrar[]> {
+    return this.ipoAllotmentService.getRegistrar();
   }
 }

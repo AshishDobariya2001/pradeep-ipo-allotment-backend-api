@@ -3,10 +3,11 @@ import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { AllotmentBaseApiService } from 'src/connectors/allotment/allotment-base.api';
 import { IpoDetailsRepository } from '../repositories';
 import cheerio from 'cheerio';
-import { IpoDetailsDto } from '../dto';
+import { IpoDataValidationDto, IpoDetailsDto } from '../dto';
 import { RegistrarList } from '../enum';
 import { Registrar } from 'src/frameworks/entities';
 import { ERROR, HttpStatusCode } from 'src/frameworks/error-code';
+import { IpoAllotmentStatus } from '../enum/ipo-allotment-status.enum';
 
 @Injectable()
 export class SkyLineFinancialService {
@@ -82,16 +83,17 @@ export class SkyLineFinancialService {
       console.log('🚀 ~ SkyLineFinancialService ~ allotment:', allotment);
       return {
         allotmentStatus: allotment.status,
-        name: allotment.applicant_name,
+        name: allotment.applicantName,
         data: allotment,
-        appliedStock: allotment.shares_applied,
+        appliedStock: allotment.appliedStock,
+        allotedStock: allotment.allotedStock,
       };
     } catch (error) {
       throw new BadRequestException('Failed to fetch allotment status');
     }
   }
 
-  async parseApplicationData(html) {
+  async parseApplicationData(html): Promise<IpoDataValidationDto> {
     const $ = cheerio.load(html);
 
     const companyName = $('strong:contains("Company Name")')
@@ -146,24 +148,27 @@ export class SkyLineFinancialService {
     const dateOfCreditOfShares = $('table td:nth-child(6)').text().trim();
     const modeOfPayment = $('table td:nth-child(7)').text().trim();
     const reasonOfNonAllotment = $('table td:nth-child(8)').text().trim();
-    const status = $('table td:nth-child(9)').text().trim();
+    const status =
+      $('table td:nth-child(9)').text().trim() === 'NOT ALLOTED'
+        ? IpoAllotmentStatus.NON_ALLOTTED
+        : IpoAllotmentStatus.ALLOTED;
 
     return {
-      company_name: companyName,
-      applicant_name: applicantName,
-      dp_ip: dpIpClientId,
-      application_number: applicationNumber,
+      companyName: companyName,
+      applicantName: applicantName,
+      dpIp: dpIpClientId,
+      applicationNumber: applicationNumber,
       pan: pan,
-      allotment_date: allotmentDate,
+      allotmentDate: allotmentDate,
       address: address,
-      shares_applied: sharesApplied,
-      application_amount: applicationAmount,
-      shares_alloted: sharesAlloted,
-      amount_adjusted: amountAdjusted,
-      amount_refunded_unblocked: amountRefundedUnblocked,
-      date_of_credit_of_shares: dateOfCreditOfShares,
-      mode_of_payment: modeOfPayment,
-      reason_of_non_allotment: reasonOfNonAllotment,
+      appliedStock: sharesApplied,
+      applicationAmount: applicationAmount,
+      allotedStock: sharesAlloted,
+      amountAdjusted: amountAdjusted,
+      amountRefundedUnblocked: amountRefundedUnblocked,
+      dateOfCreditOfShares: dateOfCreditOfShares,
+      modeOfPayment: modeOfPayment,
+      reasonOfNonAllotment: reasonOfNonAllotment,
       status: status,
     };
   }

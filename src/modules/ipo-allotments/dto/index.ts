@@ -4,3 +4,4 @@ export * from './ipo-handle-registrar.dto';
 export * from './add-pancard.dto';
 export * from './get-contact.dto';
 export * from './ipo-list.dto';
+export * from './ipo-data.dto';

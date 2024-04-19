@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
-import { BigShareService, MaashitlaService } from './services';
+import { BigShareService } from './services';
 import { AllotmentAPIsModule } from 'src/connectors/allotment/allotment.module';
-import { LinkInTimeService } from './services/link-in-time.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   AllotmentStatus,
@@ -16,7 +15,7 @@ import { AllotmentController } from './controllers/ipo-allotment.controller';
 import { KFinTechService } from './services/kfin.service';
 import { SkyLineFinancialService } from './services/skyline-finacial.service';
 import { ContactMapper, IpoListMapper } from './mappers';
-import { OcrService } from './services/ocr.service';
+import { MaashitlaSecuritiesService } from './services/maashitla-security.service';
 
 @Module({
   imports: [
@@ -31,22 +30,20 @@ import { OcrService } from './services/ocr.service';
   ],
   controllers: [AllotmentController],
   providers: [
-    BigShareService,
-    LinkInTimeService,
-    SkyLineFinancialService,
     IpoAllotmentService,
+    BigShareService,
+    SkyLineFinancialService,
     IpoDetailsRepository,
     KFinTechService,
     ContactMapper,
     IpoListMapper,
-    MaashitlaService,
-    OcrService,
+    MaashitlaSecuritiesService,
   ],
   exports: [
     BigShareService,
-    LinkInTimeService,
     IpoDetailsRepository,
     KFinTechService,
+    IpoAllotmentService,
   ],
 })
 export class IpoAllotmentsModule {}

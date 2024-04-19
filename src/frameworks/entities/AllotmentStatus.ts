@@ -46,4 +46,7 @@ export class AllotmentStatus {
 
   @Column('character varying', { name: 'applied_stock', length: 255 })
   appliedStock: string;
+
+  @Column('character varying', { name: 'alloted_stock', length: 255 })
+  allotedStock: string;
 }

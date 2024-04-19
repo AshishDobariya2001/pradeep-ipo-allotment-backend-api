@@ -16,6 +16,9 @@ import { SkyLineFinancialService } from './skyline-finacial.service';
 import { ContactMapper, IpoListMapper } from '../mappers';
 import { GetContactResponseDto } from '../models';
 import { ERROR } from '../../../frameworks/error-code';
+import { Registrar } from 'src/frameworks/entities';
+import { BusinessRuleException } from 'src/frameworks/exceptions';
+import { MaashitlaSecuritiesService } from './maashitla-security.service';
 
 @Injectable()
 export class IpoAllotmentService {
@@ -26,7 +29,12 @@ export class IpoAllotmentService {
     private ipoDetailsRepository: IpoDetailsRepository,
     private contactMapper: ContactMapper,
     private ipoListMapper: IpoListMapper,
+    private mService: MaashitlaSecuritiesService,
   ) {}
+
+  async getRegistrar(): Promise<Registrar[]> {
+    return this.ipoDetailsRepository.findRegistrarList();
+  }
 
   async getIpoList(getIpoListDto: GetIpoListDto) {
     if (getIpoListDto.type === IpoType.Upcoming) {
@@ -88,7 +96,8 @@ export class IpoAllotmentService {
       case RegistrarList.LinkInTimeIndiaPrivateLtd:
         // return
         break;
-
+      case RegistrarList.MaashitlaSecuritiesPrivateLimited:
+      // return this.maashitlaAllotment(ipo, payload);
       case RegistrarList.KfinTechnologiesLimited:
         return this.kFinIpoAllotment(ipo, payload);
 
@@ -150,7 +159,7 @@ export class IpoAllotmentService {
         });
       }
       if (!allotment) {
-        throw new BadRequestException('ipo allotment is not available');
+        throw new BusinessRuleException(ERROR.IPO_ALLOTMENT_IS_NOT_AVAILABLE);
       }
       const userAllotment = await this.ipoDetailsRepository.createAllotment({
         companyId: id,
@@ -217,10 +226,6 @@ export class IpoAllotmentService {
     let userAllotment;
     if (payload.checkCompanyStatus) {
       companyAllotment = await this.skyLineService.getAllotmentStatus(ipo);
-      console.log(
-        '🚀 ~ IpoAllotmentService ~ skyLineAllotment ~ companyAllotment:',
-        companyAllotment,
-      );
     }
     if (payload.checkUserAllotmentStatus) {
       userAllotment = await this.skyLineService.getUserAllotmentStatus(
@@ -236,4 +241,28 @@ export class IpoAllotmentService {
       userAllotment: userAllotment,
     };
   }
+
+  // async maashitlaAllotment(
+  //   ipo: IpoDetailsDto,
+  //   payload?: IPOHandleRegistrarDto,
+  // ) {
+  //   let companyAllotment;
+  //   let userAllotment;
+  //   if (payload.checkCompanyStatus) {
+  //     companyAllotment = await this.maashitlaService.getAllotmentStatus(ipo);
+  //   }
+  //   if (payload.checkUserAllotmentStatus) {
+  //     userAllotment = await this.maashitlaService.getUserAllotmentStatus(
+  //       payload.registrar,
+  //       payload.panNumber,
+  //       ipo.ipoAllotmentRequiredPayload
+  //         ? ipo.ipoAllotmentRequiredPayload
+  //         : companyAllotment,
+  //     );
+  //   }
+  //   return {
+  //     companyAllotment: companyAllotment,
+  //     userAllotment: userAllotment,
+  //   };
+  // }
 }

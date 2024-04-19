@@ -26,10 +26,15 @@ async function bootstrap() {
 
 function initializeSwagger(app) {
   const config = new DocumentBuilder()
-    .addBearerAuth()
     .setTitle('Amagi CONNECT System API')
     .setDescription('Amagi CONNECT System API')
     .setVersion('v1')
+    .addSecurity('apiKey', {
+      type: 'apiKey',
+      in: 'header',
+      name: 'x-api-key',
+      description: 'API Key for authentication',
+    })
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
