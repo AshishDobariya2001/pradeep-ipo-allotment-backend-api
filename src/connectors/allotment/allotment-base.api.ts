@@ -18,10 +18,6 @@ export class AllotmentBaseApiService {
         }),
       ),
     );
-    console.log('🚀 ~ AllotmentBaseApiService ~ payload:', payload);
-    console.log('🚀 ~ AllotmentBaseApiService ~ url:', url);
-    console.log('🚀 ~ AllotmentBaseApiService ~ headers:', headers);
-    // console.log('response :', response);
     if (response) {
       return response['data'];
     }

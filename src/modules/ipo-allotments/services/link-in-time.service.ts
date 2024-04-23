@@ -18,9 +18,9 @@ export class LinkInTimeService {
 
   async getAllotmentStatus(ipo?: IpoDetailsDto) {
     // const companyName = ipo.companyName.replace(' IPO', '');
-    // const registrar = await this.ipoDetailsRepository.findIpoRegistrarByName(
-    //   RegistrarList.BigShareServicesPvtLtd,
-    // );
+    const registrar = await this.ipoDetailsRepository.findIpoRegistrarByName(
+      RegistrarList.LinkInTimeIndiaPrivateLtd,
+    );
     const browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -57,51 +57,33 @@ export class LinkInTimeService {
     pancard?: string,
     ipoAllotmentRequiredPayload?,
   ) {
-    const url = 'https://linkintime.co.in/Initial_Offer/IPO.aspx/generateToken';
-    const headers = {
-      headers: {
-        'Content-Type': 'application/json;charset:utf-8',
-        Origin: 'https://linkintime.co.in',
-        Cookie: 'ASP.NET_SessionId=dhzz5ebgimkl5145quchl3qr',
-      },
-    };
-    const response = await this.ipoAllotmentApi.post(url, {}, headers);
-    console.log('Response:', response);
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
 
-    const payload = {
-      Applicationno: '',
-      Company: ipoAllotmentRequiredPayload.ipo_code,
-      SelectionType: 'PN',
-      PanNo: pancard,
-      txtcsdl: '',
-      txtDPID: '',
-      txtClId: '',
-      ddlType: '0',
-    };
-    console.log('🚀 ~ BigShareService ~ payload:', payload);
-    console.log(
-      '🚀 ~ BigShareService ~ registrar.allotmentUrl:',
-      registrar.allotmentUrl,
+    await page.goto(
+      'https://linkintime.co.in/Initial_Offer/public-issues.html',
     );
+    const cookies = await page.cookies();
+    console.log('🚀 ~ LinkInTimeService ~ cookies:', cookies);
 
-    for (const url of registrar.allotmentUrl) {
-      console.log('🚀 ~ BigShareService ~ url:', url);
-      try {
-        const response = await this.ipoAllotmentApi.post(url, payload);
-        console.log('🚀 ~ BigShareService ~ response:', response);
-        if (response) {
-          return {
-            allotmentStatus: response['d'].ALLOTED,
-            name: response['d'].Name,
-            data: response['d'],
-            appliedStock: response['d'].APPLIED,
-          };
-        }
-      } catch (error) {
-        console.error(`Error occurred while fetching data from ${url}:`, error);
-      }
-    }
+    // Close the browser
+    await browser.close();
 
-    throw new Error('Failed to fetch data from all allotment URLs');
+    // Use the cookies in subsequent requests
+    const cookieHeader = cookies
+      .map((cookie) => `${cookie.name}=${cookie.value}`)
+      .join('; ');
+
+    const headers = {
+      'Content-Type': 'application/json;charset:utf-8',
+      Cookie: cookieHeader,
+    };
+    console.log('🚀 ~ LinkInTimeService ~ cookies:', cookies);
+    const tokenResponse = await this.ipoAllotmentApi.post(
+      'https://linkintime.co.in/Initial_Offer/IPO.aspx/generateToken',
+      {},
+      headers,
+    );
+    console.log('🚀 ~ LinkInTimeService ~ tokenResponse:', tokenResponse);
   }
 }

@@ -141,7 +141,6 @@ export class IpoAllotmentService {
             : true,
         },
       );
-      console.log('🚀 ~ IpoAllotmentService ~ allotment:', allotment);
 
       let contact = await this.ipoDetailsRepository.findContactByPancard(
         ipoAllotmentContactDto.panNumber,

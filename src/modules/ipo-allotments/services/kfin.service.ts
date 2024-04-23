@@ -78,8 +78,6 @@ export class KFinTechService {
     });
     const page = await browser.newPage();
     try {
-      console.log('🚀 ~ KFinTechService ~ url:', registrar.allotmentUrl[0]);
-
       await page.goto(registrar.allotmentUrl[0]);
 
       await page.select('select#ddl_ipo', ipoAllotmentRequiredPayload.ipo_code);
@@ -88,17 +86,17 @@ export class KFinTechService {
 
       const captchaImageHandle = await page.$('#captchaimg');
       const captchaScreenshotBuffer = await captchaImageHandle.screenshot({
-        path: 'asset/captcha-1.png',
+        path: 'asset/captcha.png',
       });
       await page.screenshot({ path: 'allotment-kFin-url-0.png' });
 
       const result = await this.solveCaptcha(captchaScreenshotBuffer);
       await page.type('#txt_captcha', result);
-      await page.screenshot({ path: 'allotment-kFin-url-1.png' });
+      // await page.screenshot({ path: 'allotment-kFin-url-1.png' });
       await page.click('#btn_submit_query');
 
       await page.waitForNavigation();
-      await page.screenshot({ path: 'allotment-kFin-url-2.png' });
+      // await page.screenshot({ path: 'allotment-kFin-url-2.png' });
 
       const htmlContent = await page.content();
 
@@ -113,7 +111,7 @@ export class KFinTechService {
     } catch (error) {
       Logger.log(`Error occurred for PAN ${pancard}:`, error);
     } finally {
-      await page.screenshot({ path: 'allotment-kFin-url-final.png' });
+      // await page.screenshot({ path: 'allotment-kFin-url-final.png' });
       await browser.close();
     }
   }
@@ -162,7 +160,7 @@ export class KFinTechService {
       });
       return response['result'];
     } catch (error) {
-      console.log(error);
+      Logger.log(error);
     }
   }
 }

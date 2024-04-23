@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { BigShareService } from './services';
+import { BigShareService, LinkInTimeService } from './services';
 import { AllotmentAPIsModule } from 'src/connectors/allotment/allotment.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
@@ -38,6 +38,7 @@ import { MaashitlaSecuritiesService } from './services/maashitla-security.servic
     ContactMapper,
     IpoListMapper,
     MaashitlaSecuritiesService,
+    LinkInTimeService,
   ],
   exports: [
     BigShareService,

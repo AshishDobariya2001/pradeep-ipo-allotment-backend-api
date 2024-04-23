@@ -80,7 +80,6 @@ export class SkyLineFinancialService {
         headers,
       );
       const allotment = await this.parseApplicationData(result);
-      console.log('🚀 ~ SkyLineFinancialService ~ allotment:', allotment);
       return {
         allotmentStatus: allotment.status,
         name: allotment.applicantName,
