@@ -96,36 +96,42 @@ export class SkyLineFinancialService {
     const $ = cheerio.load(html);
 
     const companyName = $('strong:contains("Company Name")')
+      .first()
       .parent()
       .text()
       .replace('Company Name : ', '')
       .trim();
 
     const applicantName = $('strong:contains("Applicant Name")')
+      .first()
       .parent()
       .text()
       .replace('Applicant Name : ', '')
       .trim();
 
     const dpIpClientId = $('strong:contains("DP IP /Client ID")')
+      .first()
       .parent()
       .text()
       .replace('DP IP /Client ID : ', '')
       .trim();
 
     const applicationNumber = $('strong:contains("Application Number")')
+      .first()
       .parent()
       .text()
       .replace('Application Number : ', '')
       .trim();
 
     const pan = $('strong:contains("Pan")')
+      .first()
       .parent()
       .text()
       .replace('Pan : ', '')
       .trim();
 
     const allotmentDate = $('strong:contains("Allotment Date")')
+      .first()
       .parent()
       .text()
       .replace('Allotment Date : ', '')
@@ -133,24 +139,39 @@ export class SkyLineFinancialService {
 
     // Extracting Address
     let address = $('strong:contains("Address")')
+      .first()
       .parent()
       .text()
       .replace('Address : ', '')
       .trim();
     address = address.replace(/\s+/g, ' ');
     // Extracting other details from the table
-    const sharesApplied = $('table td:nth-child(1)').text().trim();
-    const applicationAmount = $('table td:nth-child(2)').text().trim();
-    const sharesAlloted = $('table td:nth-child(3)').text().trim();
-    const amountAdjusted = $('table td:nth-child(4)').text().trim();
-    const amountRefundedUnblocked = $('table td:nth-child(5)').text().trim();
-    const dateOfCreditOfShares = $('table td:nth-child(6)').text().trim();
-    const modeOfPayment = $('table td:nth-child(7)').text().trim();
-    const reasonOfNonAllotment = $('table td:nth-child(8)').text().trim();
-    const status =
-      $('table td:nth-child(9)').text().trim() === 'NOT ALLOTED'
-        ? IpoAllotmentStatus.NON_ALLOTTED
-        : IpoAllotmentStatus.ALLOTED;
+    const sharesApplied = $('table td:nth-child(1)').first().text().trim();
+    const applicationAmount = $('table td:nth-child(2)').first().text().trim();
+    const sharesAlloted = $('table td:nth-child(3)').first().text().trim();
+    const amountAdjusted = $('table td:nth-child(4)').first().text().trim();
+    const amountRefundedUnblocked = $('table td:nth-child(5)')
+      .first()
+      .text()
+      .trim();
+    const dateOfCreditOfShares = $('table td:nth-child(6)')
+      .first()
+      .text()
+      .trim();
+    const modeOfPayment = $('table td:nth-child(7)').first().text().trim();
+    const reasonOfNonAllotment = $('table td:nth-child(8)')
+      .first()
+      .text()
+      .trim();
+    let status;
+    if (sharesApplied == '') {
+      status = IpoAllotmentStatus.NOT_APPLIED;
+    } else {
+      status =
+        $('table td:nth-child(9)').text().trim() === 'NOT ALLOTED'
+          ? IpoAllotmentStatus.NON_ALLOTTED
+          : IpoAllotmentStatus.ALLOTED;
+    }
 
     return {
       companyName: companyName,

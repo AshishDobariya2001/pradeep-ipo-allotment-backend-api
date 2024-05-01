@@ -82,8 +82,8 @@ export class MaashitlaSecuritiesService {
       status:
         response['share_Alloted'] > 0
           ? IpoAllotmentStatus.ALLOTED
-          : response['share_Applied']
-            ? IpoAllotmentStatus.NON_ALLOTTED
+          : response['share_Applied'] === 0
+            ? IpoAllotmentStatus.NOT_APPLIED
             : IpoAllotmentStatus.NON_ALLOTTED,
     };
   }

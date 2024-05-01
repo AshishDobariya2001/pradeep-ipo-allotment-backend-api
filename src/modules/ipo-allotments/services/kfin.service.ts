@@ -107,7 +107,7 @@ export class KFinTechService {
         allotedStock: extractedInfo.allotedStock,
       };
     } catch (error) {
-      Logger.log(`Error occurred for PAN ${pancard}:`, error);
+      Logger.log(`Error occurred for PAN ${pancard}:`, error, error.stack);
     } finally {
       // await page.screenshot({ path: 'allotment-kFin-url-final.png' });
       await browser.close();
@@ -156,6 +156,10 @@ export class KFinTechService {
         apikey: SOLVE_CAPTCHA_API_KEY,
         data: dataURL,
       });
+      Logger.log(
+        '🚀 ~ KFinTechService ~ solveCaptcha ~ response:',
+        response['result'],
+      );
       return response['result'];
     } catch (error) {
       Logger.log(error);
