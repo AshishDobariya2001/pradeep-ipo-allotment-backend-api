@@ -19,6 +19,7 @@ import { ERROR } from '../../../frameworks/error-code';
 import { Registrar } from 'src/frameworks/entities';
 import { BusinessRuleException } from 'src/frameworks/exceptions';
 import { MaashitlaSecuritiesService } from './maashitla-security.service';
+import { LinkInTimeService } from './link-in-time.service';
 
 @Injectable()
 export class IpoAllotmentService {
@@ -29,7 +30,8 @@ export class IpoAllotmentService {
     private ipoDetailsRepository: IpoDetailsRepository,
     private contactMapper: ContactMapper,
     private ipoListMapper: IpoListMapper,
-    private mService: MaashitlaSecuritiesService,
+    private maashitlaService: MaashitlaSecuritiesService,
+    private linkInTimeService: LinkInTimeService,
   ) {}
 
   async getRegistrar(): Promise<Registrar[]> {
@@ -94,10 +96,9 @@ export class IpoAllotmentService {
         return this.bigShareIpoAllotment(ipo, payload);
 
       case RegistrarList.LinkInTimeIndiaPrivateLtd:
-        // return
-        break;
+        return this.linkInTimeIpoAllotment(ipo, payload);
       case RegistrarList.MaashitlaSecuritiesPrivateLimited:
-      // return this.maashitlaAllotment(ipo, payload);
+        return this.maashitlaAllotment(ipo, payload);
       case RegistrarList.KfinTechnologiesLimited:
         return this.kFinIpoAllotment(ipo, payload);
 
@@ -167,12 +168,36 @@ export class IpoAllotmentService {
         companyName: company.companyName,
         data: allotment.userAllotment?.data,
         allotmentStatus: allotment.userAllotment.allotmentStatus,
-        appliedStock: allotment.userAllotment.appliedStock,
+        appliedStock: allotment.userAllotment?.appliedStock,
       });
 
       return userAllotment;
     }
     return userAllotment;
+  }
+
+  async linkInTimeIpoAllotment(
+    ipo: IpoDetailsDto,
+    payload?: IPOHandleRegistrarDto,
+  ) {
+    let companyAllotment;
+    let userAllotment;
+    if (payload.checkCompanyStatus) {
+      companyAllotment = await this.linkInTimeService.getAllotmentStatus(ipo);
+    }
+    if (payload.checkUserAllotmentStatus) {
+      userAllotment = await this.linkInTimeService.getUserAllotmentStatus(
+        payload.registrar,
+        payload.panNumber,
+        ipo.ipoAllotmentRequiredPayload
+          ? ipo.ipoAllotmentRequiredPayload
+          : companyAllotment,
+      );
+    }
+    return {
+      companyAllotment: companyAllotment,
+      userAllotment: userAllotment,
+    };
   }
 
   async bigShareIpoAllotment(
@@ -241,27 +266,27 @@ export class IpoAllotmentService {
     };
   }
 
-  // async maashitlaAllotment(
-  //   ipo: IpoDetailsDto,
-  //   payload?: IPOHandleRegistrarDto,
-  // ) {
-  //   let companyAllotment;
-  //   let userAllotment;
-  //   if (payload.checkCompanyStatus) {
-  //     companyAllotment = await this.maashitlaService.getAllotmentStatus(ipo);
-  //   }
-  //   if (payload.checkUserAllotmentStatus) {
-  //     userAllotment = await this.maashitlaService.getUserAllotmentStatus(
-  //       payload.registrar,
-  //       payload.panNumber,
-  //       ipo.ipoAllotmentRequiredPayload
-  //         ? ipo.ipoAllotmentRequiredPayload
-  //         : companyAllotment,
-  //     );
-  //   }
-  //   return {
-  //     companyAllotment: companyAllotment,
-  //     userAllotment: userAllotment,
-  //   };
-  // }
+  async maashitlaAllotment(
+    ipo: IpoDetailsDto,
+    payload?: IPOHandleRegistrarDto,
+  ) {
+    let companyAllotment;
+    let userAllotment;
+    if (payload.checkCompanyStatus) {
+      companyAllotment = await this.maashitlaService.getAllotmentStatus(ipo);
+    }
+    if (payload.checkUserAllotmentStatus) {
+      userAllotment = await this.maashitlaService.getUserAllotmentStatus(
+        payload.registrar,
+        payload.panNumber,
+        ipo.ipoAllotmentRequiredPayload
+          ? ipo.ipoAllotmentRequiredPayload
+          : companyAllotment,
+      );
+    }
+    return {
+      companyAllotment: companyAllotment,
+      userAllotment: userAllotment,
+    };
+  }
 }

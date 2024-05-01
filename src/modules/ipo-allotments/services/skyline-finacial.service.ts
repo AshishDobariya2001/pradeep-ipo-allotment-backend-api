@@ -155,7 +155,7 @@ export class SkyLineFinancialService {
     return {
       companyName: companyName,
       applicantName: applicantName,
-      dpIp: dpIpClientId,
+      dpNumber: dpIpClientId,
       applicationNumber: applicationNumber,
       pan: pan,
       allotmentDate: allotmentDate,

@@ -1,18 +1,18 @@
-# Build stage
-FROM node:18-alpine as build
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
-
-# Production stage
+# Use a smaller Node.js image as base
 FROM node:18-alpine
+
+# Set working directory
 WORKDIR /app
-COPY --from=build /app/package*.json ./
-RUN npm install --production
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/.env ./
+
+# Copy package.json and package-lock.json to install dependencies
+COPY package*.json ./
+
+# Copy application files
+COPY . .
+
+# Install dependencies
+RUN npm install
+
 # Install necessary dependencies for Chromium
 RUN apk update && apk add --no-cache \
     chromium \
@@ -21,7 +21,15 @@ RUN apk update && apk add --no-cache \
     freetype \
     ttf-freefont \
     fontconfig
+
+# Build the application
+RUN npm run build
+
+# Expose port
+EXPOSE 3000
+
 # Set Puppeteer to use the installed Chromium
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
-EXPOSE 3000
+
+# Start the application
 CMD ["npm", "run", "start:prod"]

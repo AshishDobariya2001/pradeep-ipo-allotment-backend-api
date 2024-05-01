@@ -15,7 +15,7 @@ async function bootstrap() {
     type: VersioningType.URI,
   });
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.enableCors();
 
   initializeSwagger(app);
@@ -26,8 +26,8 @@ async function bootstrap() {
 
 function initializeSwagger(app) {
   const config = new DocumentBuilder()
-    .setTitle('Amagi CONNECT System API')
-    .setDescription('Amagi CONNECT System API')
+    .setTitle('IPO Allotment API')
+    .setDescription('IPO Allotment API')
     .setVersion('v1')
     .addSecurity('apiKey', {
       type: 'apiKey',

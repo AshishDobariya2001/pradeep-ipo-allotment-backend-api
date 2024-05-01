@@ -13,6 +13,7 @@ import {
   SOLVE_CAPTCHA_USER_ID,
 } from 'src/frameworks/environment';
 import { IpoAllotmentStatus } from '../enum/ipo-allotment-status.enum';
+import { compareNameWithIpo } from 'src/frameworks/function';
 
 @Injectable()
 export class KFinTechService {
@@ -23,7 +24,6 @@ export class KFinTechService {
 
   async getAllotmentStatus(ipo?: IpoDetailsDto) {
     try {
-      const companyName = ipo.companyName.replace(' IPO', '');
       const registrar = await this.ipoDetailsRepository.findIpoRegistrarByName(
         RegistrarList.KfinTechnologiesLimited,
       );
@@ -34,10 +34,8 @@ export class KFinTechService {
             registrar.serverUrl[0],
           );
           const html = response;
-          const ipoList = this.parseIpoList(html);
-          const foundIpo = ipoList.find((ipo) =>
-            ipo.ipo_name.toLowerCase().includes(companyName.toLowerCase()),
-          );
+          const companyList = this.parseIpoList(html);
+          const foundIpo = compareNameWithIpo(ipo.companyName, companyList);
 
           if (foundIpo && !ipo.ipoAllotmentRequiredPayload) {
             await this.ipoDetailsRepository.update(ipo.id, {
@@ -141,7 +139,7 @@ export class KFinTechService {
       applicationNumber: applicationNumber,
       category: category,
       applicantName: name,
-      dpIp: clientId,
+      dpNumber: clientId,
       pan: pan,
       appliedStock: applied,
       allotedStock: alloted,

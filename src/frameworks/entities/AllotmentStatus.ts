@@ -1,11 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import { Contacts } from './Contacts';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('allotment_status', { schema: 'public' })
 export class AllotmentStatus {
@@ -44,7 +37,11 @@ export class AllotmentStatus {
   @Column('character varying', { name: 'pancard', length: 255 })
   pancard: string;
 
-  @Column('character varying', { name: 'applied_stock', length: 255 })
+  @Column('character varying', {
+    name: 'applied_stock',
+    length: 255,
+    nullable: false,
+  })
   appliedStock: string;
 
   @Column('character varying', { name: 'alloted_stock', length: 255 })

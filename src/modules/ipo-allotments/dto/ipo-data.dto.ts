@@ -4,7 +4,7 @@ import { IpoAllotmentStatus } from '../enum/ipo-allotment-status.enum';
 export class IpoDataValidationDto {
   companyName?: string;
   applicantName?: string;
-  dpIp?: string;
+  dpNumber?: string;
   applicationNumber?: string;
   pan?: string;
   allotmentDate?: string;
@@ -19,4 +19,11 @@ export class IpoDataValidationDto {
   reasonOfNonAllotment?: string;
   status?: IpoAllotmentStatus;
   category?: string;
+  databaseId?: string;
+  offerPrice?: string;
+  rfnDNO?: string;
+  rfnDAMT?: string;
+  amtadj?: string;
+  invCode?: string;
+  bnkCode?: string;
 }

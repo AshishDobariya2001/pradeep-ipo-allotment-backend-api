@@ -1,27 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { AllotmentBaseApiService } from 'src/connectors/allotment/allotment-base.api';
 import { IpoDetailsRepository } from '../repositories';
-import { IpoDetailsDto } from '../dto';
+import { IpoDataValidationDto, IpoDetailsDto } from '../dto';
 import { RegistrarList } from '../enum';
 import cheerio from 'cheerio';
 import { ERROR } from 'src/frameworks/error-code';
 import { BusinessRuleException } from 'src/frameworks/exceptions';
+import { compareNameWithIpo } from 'src/frameworks/function';
+import { Registrar } from 'src/frameworks/entities';
+import { IpoAllotmentStatus } from '../enum/ipo-allotment-status.enum';
 
 @Injectable()
 export class MaashitlaSecuritiesService {
   constructor(
     private ipoAllotmentApi: AllotmentBaseApiService,
     private ipoDetailsRepository: IpoDetailsRepository,
-  ) {}
+  ) {
+    // this.getAllotmentStatus();
+  }
   async getAllotmentStatus(ipo?: IpoDetailsDto) {
     try {
-      const databaseCompanyName = ipo.companyName.replace(' IPO', '');
-
-      const companyName = databaseCompanyName
-        .toLowerCase()
-        .split(/\s+/)
-        .filter((word) => word !== 'ltd' && word !== 'limited')
-        .join(' ');
+      const companyName = 'Radiowalla Network Limited IPO';
 
       const registrar = await this.ipoDetailsRepository.findIpoRegistrarByName(
         RegistrarList.MaashitlaSecuritiesPrivateLimited,
@@ -31,14 +30,7 @@ export class MaashitlaSecuritiesService {
 
       const companyList = await this.parseIpoList(response);
 
-      const foundIpo = companyList.find(
-        (ipo) =>
-          ipo.ipo_name
-            .toLowerCase()
-            .split(/\s+/)
-            .filter((word) => word !== 'ltd' && word !== 'limited')
-            .join(' ') === companyName,
-      );
+      const foundIpo = compareNameWithIpo(companyName, companyList);
 
       if (foundIpo && !ipo.ipoAllotmentRequiredPayload) {
         await this.ipoDetailsRepository.update(ipo.id, {
@@ -61,5 +53,38 @@ export class MaashitlaSecuritiesService {
       .get();
     companyList.shift();
     return companyList;
+  }
+
+  async getUserAllotmentStatus(
+    registrar?: Registrar,
+    pancard?: string,
+    ipoAllotmentRequiredPayload?,
+  ) {
+    const url = `${registrar.allotmentUrl[0]}?company=${ipoAllotmentRequiredPayload.ipo_code}&search=${pancard}`;
+    const response = await this.ipoAllotmentApi.get(url);
+    const allotment = await this.parseApplicationData(response);
+    return {
+      allotmentStatus: allotment.status,
+      name: allotment.applicantName,
+      data: allotment,
+      appliedStock: allotment.appliedStock,
+      allotedStock: allotment.allotedStock,
+    };
+  }
+
+  async parseApplicationData(response): Promise<IpoDataValidationDto> {
+    return {
+      applicationNumber: response['application_Number'],
+      dpNumber: response['demat_Account_Number'],
+      applicantName: response['name'],
+      appliedStock: response['share_Applied'],
+      allotedStock: response['share_Alloted'],
+      status:
+        response['share_Alloted'] > 0
+          ? IpoAllotmentStatus.ALLOTED
+          : response['share_Applied']
+            ? IpoAllotmentStatus.NON_ALLOTTED
+            : IpoAllotmentStatus.NON_ALLOTTED,
+    };
   }
 }

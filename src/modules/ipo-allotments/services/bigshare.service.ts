@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as puppeteer from 'puppeteer';
 import { AllotmentBaseApiService } from 'src/connectors/allotment/allotment-base.api';
 import { IpoDetailsRepository } from '../repositories';
 import { RegistrarList } from '../enum';
@@ -8,6 +7,9 @@ import { Registrar } from 'src/frameworks/entities';
 import { BusinessRuleException } from 'src/frameworks/exceptions';
 import { ERROR } from 'src/frameworks/error-code';
 import { IpoAllotmentStatus } from '../enum/ipo-allotment-status.enum';
+import cheerio from 'cheerio';
+import { compareNameWithIpo } from 'src/frameworks/function';
+
 @Injectable()
 export class BigShareService {
   constructor(
@@ -15,38 +17,36 @@ export class BigShareService {
     private ipoDetailsRepository: IpoDetailsRepository,
   ) {}
 
-  async getAllotmentStatus(ipo: IpoDetailsDto) {
-    const companyName = ipo.companyName.replace(' IPO', '');
+  async getAllotmentStatus(ipo?: IpoDetailsDto) {
     const registrar = await this.ipoDetailsRepository.findIpoRegistrarByName(
       RegistrarList.BigShareServicesPvtLtd,
     );
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
+    const response = await this.ipoAllotmentApi.get(registrar.serverUrl[0]);
+    const companyList = this.parseIpoList(response);
 
-    const page = await browser.newPage();
-    await page.goto(registrar.serverUrl[0]);
+    const foundIpo = compareNameWithIpo(ipo.companyName, companyList);
 
-    const ipoData = await page.$$eval('#ddlCompany option', (options) => {
-      return options.map((option) => ({
-        ipo_name: option.textContent.trim(),
-        ipo_code: option.getAttribute('value'),
-      }));
-    });
-    await browser.close();
-
-    const companyList = ipoData.filter((ipo) => ipo.ipo_code !== '');
-    const foundIpo = companyList.find((ipo) =>
-      ipo.ipo_name.toLowerCase().includes(companyName.toLowerCase()),
-    );
     if (foundIpo && !ipo.ipoAllotmentRequiredPayload) {
       await this.ipoDetailsRepository.update(ipo.id, {
         ipoAllotmentRequiredPayload: foundIpo,
       });
     }
     return foundIpo;
+  }
+
+  private parseIpoList(html): { ipo_name: string; ipo_code: string }[] {
+    const $ = cheerio.load(html);
+    const options = $('#ddlCompany option');
+    const ipoList = options
+      .map((index, element) => {
+        const ipo_name = $(element).text();
+        const ipo_code = $(element).attr('value');
+        return { ipo_name, ipo_code };
+      })
+      .get();
+    ipoList.shift();
+    return ipoList;
   }
 
   async getUserAllotmentStatus(
@@ -97,7 +97,7 @@ export class BigShareService {
     }
     const data: IpoDataValidationDto = {
       applicationNumber: response['APPLICATION_NO'],
-      dpIp: response['DPID'],
+      dpNumber: response['DPID'],
       applicantName: response['Name'],
       appliedStock: response['APPLIED'],
       allotedStock: response['ALLOTED'],

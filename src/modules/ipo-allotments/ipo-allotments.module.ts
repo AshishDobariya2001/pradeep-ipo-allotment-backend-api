@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { BigShareService, LinkInTimeService } from './services';
+import { BigShareService } from './services';
 import { AllotmentAPIsModule } from 'src/connectors/allotment/allotment.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
@@ -16,6 +16,8 @@ import { KFinTechService } from './services/kfin.service';
 import { SkyLineFinancialService } from './services/skyline-finacial.service';
 import { ContactMapper, IpoListMapper } from './mappers';
 import { MaashitlaSecuritiesService } from './services/maashitla-security.service';
+import { LinkInTimeService } from './services/link-in-time.service';
+import { CemeoIndiaService } from './services/cemeo-india.service';
 
 @Module({
   imports: [
@@ -32,13 +34,14 @@ import { MaashitlaSecuritiesService } from './services/maashitla-security.servic
   providers: [
     IpoAllotmentService,
     BigShareService,
+    LinkInTimeService,
     SkyLineFinancialService,
     IpoDetailsRepository,
     KFinTechService,
     ContactMapper,
     IpoListMapper,
     MaashitlaSecuritiesService,
-    LinkInTimeService,
+    CemeoIndiaService,
   ],
   exports: [
     BigShareService,
