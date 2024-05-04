@@ -50,7 +50,7 @@ export class AllotmentController {
   async allotmentByPanCardStatus(
     @Param('id') id: string,
     @Body() ipoAllotmentContactDto: IpoAllotmentContactDto,
-  ): Promise<AllotmentStatus> {
+  ) {
     return this.ipoAllotmentService.allotmentByPanCardStatus(
       id,
       ipoAllotmentContactDto,

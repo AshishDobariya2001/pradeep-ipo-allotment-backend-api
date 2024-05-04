@@ -71,12 +71,11 @@ export class BigShareService {
         if (response) {
           const responseData = await this.parseAllotmentData(response['d']);
           return {
-            allotmentStatus: response['d'].ALLOTED,
+            allotmentStatus: responseData.status,
             name: response['d'].Name,
             data: responseData,
             appliedStock: response['d'].APPLIED,
             allotedStock: response['d'].ALLOTED,
-            status: responseData.status,
           };
         }
       } catch (error) {

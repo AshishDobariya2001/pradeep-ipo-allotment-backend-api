@@ -1,22 +1,39 @@
-import { IsEnum, IsNumber } from 'class-validator';
-import { IpoType } from '../enum';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IpoStatusType, IpoType } from '../enum';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class GetIpoListDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
+    type: String,
+    enum: IpoStatusType,
+  })
+  @IsOptional()
+  @IsEnum([IpoStatusType.Upcoming, IpoStatusType.Listed, IpoStatusType.All])
+  type?: IpoStatusType;
+
+  @ApiPropertyOptional({ type: String })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiPropertyOptional({ type: Boolean })
+  @IsOptional()
+  @IsBoolean()
+  todayAllotment?: boolean;
+
+  @ApiPropertyOptional({
     type: String,
     enum: IpoType,
   })
-  @IsEnum([IpoType.Upcoming, IpoType.Listed])
-  type: IpoType;
+  @IsOptional()
+  @IsEnum([IpoType.MAINLINE, IpoType.SME])
+  categoryType?: IpoType;
 
-  @ApiProperty({
-    type: Number,
-  })
-  limit: string;
+  @ApiPropertyOptional({ type: Number })
+  @IsOptional()
+  limit?: number;
 
-  @ApiProperty({
-    type: Number,
-  })
-  offset: string;
+  @ApiPropertyOptional({ type: Number })
+  @IsOptional()
+  offset?: number;
 }

@@ -8,7 +8,6 @@ export function compareNameWithIpo(companyName: string, companyList) {
   const foundIpo = companyList.find(
     (ipo) => compareNameByPercentage(companyName, ipo) >= 80,
   );
-  console.log('🚀 ~ compareName ~ foundIpo:', foundIpo);
 
   return foundIpo;
 }
@@ -32,7 +31,6 @@ function compareNameByPercentage(databaseCompanyName, ipo: Company): number {
   }
 
   const matchingPercentage = (matchingWords / companyNameWords.length) * 100;
-  console.log('🚀 ~ compare :', databaseNameWords, ipoName, matchingPercentage);
 
   return matchingPercentage;
 }

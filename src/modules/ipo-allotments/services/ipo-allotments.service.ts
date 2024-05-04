@@ -1,7 +1,7 @@
 /* eslint-disable max-lines-per-function */
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { IpoDetailsRepository } from '../repositories/ipo-details.repository';
-import { IpoType, RegistrarList } from '../enum';
+import { IpoStatusType, RegistrarList } from '../enum';
 import { BigShareService } from '.';
 import {
   AddPanCardDto,
@@ -39,17 +39,10 @@ export class IpoAllotmentService {
   }
 
   async getIpoList(getIpoListDto: GetIpoListDto) {
-    if (getIpoListDto.type === IpoType.Upcoming) {
-      const ipos = await this.ipoDetailsRepository.findUpcomingIPOs();
-      return this.ipoListMapper.mapAll(ipos);
-    } else if (getIpoListDto.type === IpoType.Listed) {
-      const ipos = await this.ipoDetailsRepository.findListedIPOs(
-        getIpoListDto.limit,
-        getIpoListDto.offset,
-      );
-      return this.ipoListMapper.mapAll(ipos);
-    }
+    const ipos = await this.ipoDetailsRepository.findIPOList(getIpoListDto);
+    return this.ipoListMapper.mapAll(ipos);
   }
+
   async addPancard(
     addPanCardDto: AddPanCardDto,
   ): Promise<GetContactResponseDto> {
@@ -101,11 +94,10 @@ export class IpoAllotmentService {
         return this.maashitlaAllotment(ipo, payload);
       case RegistrarList.KfinTechnologiesLimited:
         return this.kFinIpoAllotment(ipo, payload);
-
       case RegistrarList.SkylineFinancialServicesPrivateLtd:
         return this.skyLineAllotment(ipo, payload);
       default:
-        // Default logic if needed
+        throw new BadRequestException(ERROR.WE_DID_NOT_HAVE_THIS_REGISTRAR);
         break;
     }
   }
@@ -119,7 +111,9 @@ export class IpoAllotmentService {
         id,
         ipoAllotmentContactDto.panNumber,
       );
-
+    let contact = await this.ipoDetailsRepository.findContactByPancard(
+      ipoAllotmentContactDto.panNumber,
+    );
     if (!userAllotment) {
       const company = await this.ipoDetailsRepository.findOne(id);
       const registrar = await this.ipoDetailsRepository.findIpoRegistrarByName(
@@ -143,20 +137,26 @@ export class IpoAllotmentService {
         },
       );
 
-      let contact = await this.ipoDetailsRepository.findContactByPancard(
-        ipoAllotmentContactDto.panNumber,
-      );
       if (!contact) {
         contact = await this.ipoDetailsRepository.createContact({
           panNumber: ipoAllotmentContactDto.panNumber,
-          name: allotment.userAllotment?.name,
-          legalName: allotment.userAllotment?.name,
+          name: allotment.userAllotment.name
+            ? allotment.userAllotment.name
+            : null,
+          legalName: allotment.userAllotment.name
+            ? allotment.userAllotment.name
+            : null,
         });
-      } else if (!contact.name || !contact.legalName) {
+      } else if (
+        (!contact.name || !contact.legalName) &&
+        allotment.userAllotment?.name
+      ) {
         await this.ipoDetailsRepository.updateContact(contact.id, {
           name: allotment.userAllotment?.name,
           legalName: allotment.userAllotment?.name,
         });
+        contact.legalName = allotment.userAllotment?.name;
+        contact.name = allotment.userAllotment.name;
       }
       if (!allotment) {
         throw new BusinessRuleException(ERROR.IPO_ALLOTMENT_IS_NOT_AVAILABLE);
@@ -170,9 +170,10 @@ export class IpoAllotmentService {
         allotmentStatus: allotment.userAllotment.allotmentStatus,
         appliedStock: allotment.userAllotment?.appliedStock,
       });
-
+      userAllotment['contact'] = contact;
       return userAllotment;
     }
+    userAllotment['contact'] = contact;
     return userAllotment;
   }
 

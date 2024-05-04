@@ -5,3 +5,4 @@ export * from './add-pancard.dto';
 export * from './get-contact.dto';
 export * from './ipo-list.dto';
 export * from './ipo-data.dto';
+export * from './get-ipo-search-filter.dto';

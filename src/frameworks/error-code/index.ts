@@ -15,6 +15,10 @@ export const ERROR = {
     message: 'ipo allotment is not available',
     code: 'IPO_ALLOTMENT_IS_NOT_AVAILABLE',
   },
+  WE_DID_NOT_HAVE_THIS_REGISTRAR: {
+    message: 'We did not have this registrar',
+    code: 'WE_DID_NOT_HAVE_THIS_REGISTRAR',
+  },
 };
 export enum HttpStatusCode {
   Success = 200,

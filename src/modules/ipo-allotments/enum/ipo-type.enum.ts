@@ -1,4 +1,4 @@
 export enum IpoType {
-  Upcoming = 'upcoming',
-  Listed = 'listed',
+  MAINLINE = 'mainline',
+  SME = 'sme',
 }

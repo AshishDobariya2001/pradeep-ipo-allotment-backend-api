@@ -5,8 +5,8 @@ import { Timeline } from 'src/frameworks/entities/Timeline';
 import { In, Repository } from 'typeorm';
 import * as moment from 'moment-timezone';
 import { AllotmentStatus, Contacts, Registrar } from 'src/frameworks/entities';
-import { IpoDetailsDto } from '../dto';
-import { IpoType } from '../enum';
+import { GetIpoListDto, IpoDetailsDto } from '../dto';
+import { IpoStatusType, IpoType } from '../enum';
 
 @Injectable()
 export class IpoDetailsRepository {
@@ -33,36 +33,71 @@ export class IpoDetailsRepository {
       select: ['id', 'name', 'serverUrl'],
     });
   }
-  async findUpcomingIPOs() {
-    const currentDate = new Date();
-    const futureIpoQuery = await this.ipoDetailsRepository
+  async findIPOList(getIpoListDto: GetIpoListDto): Promise<IpoDetails[]> {
+    let queryBuilder = await this.ipoDetailsRepository
       .createQueryBuilder('ipo')
-      .where(
-        'ipo.ipoOpenDate IS NULL OR (ipo.ipoOpenDate IS NOT NULL AND ipo.listingDate > :currentDate)',
-        { currentDate },
-      )
+      .leftJoin(
+        'ipo.timelines',
+        'timeline',
+        'timeline.ipo_details_id = ipo.id',
+      );
+
+    queryBuilder = await this.filterIpoListQuery(queryBuilder, getIpoListDto);
+
+    if (getIpoListDto.type === IpoStatusType.Listed) {
+      return queryBuilder
+        .orderBy('ipo.listing_date', 'DESC')
+        .limit(getIpoListDto.limit)
+        .offset(getIpoListDto.offset)
+        .getMany();
+    }
+
+    return queryBuilder
       .orderBy('ipo.ipoOpenDate', 'ASC')
-      .addOrderBy('ipo.listingDate', 'ASC');
-    return futureIpoQuery.getMany();
+      .addOrderBy('ipo.listingDate', 'ASC')
+      .getMany();
   }
 
-  async findListedIPOs(limit, offset) {
+  async filterIpoListQuery(queryBuilder, getIpoListDto: GetIpoListDto) {
     const currentDate = new Date();
 
-    let queryBuilder = this.ipoDetailsRepository
-      .createQueryBuilder('ipo')
-      .where('ipo.ipo_open_date IS NOT NULL')
-      .andWhere('(ipo.listing_date < :currentDate)', { currentDate });
+    if (getIpoListDto.type === IpoStatusType.Upcoming) {
+      queryBuilder = queryBuilder.where(
+        'ipo.ipoOpenDate IS NULL OR (ipo.ipoOpenDate IS NOT NULL AND :currentDate <=timeline.basisOfAllotment )',
+        { currentDate },
+      );
+    }
 
-    queryBuilder = queryBuilder
-      .orderBy('ipo.listing_date', 'DESC')
-      .limit(limit)
-      .offset(offset);
+    if (getIpoListDto.type === IpoStatusType.Listed) {
+      queryBuilder = queryBuilder
+        .where('ipo.ipo_open_date IS NOT NULL')
+        .andWhere('(timeline.basisOfAllotment < :currentDate)', {
+          currentDate,
+        });
+    }
 
-    return queryBuilder.getMany();
+    if (getIpoListDto.name) {
+      queryBuilder = queryBuilder.andWhere('ipo.companyName like :name', {
+        name: `%${getIpoListDto.name}%`,
+      });
+    }
+
+    if (getIpoListDto.categoryType) {
+      queryBuilder = queryBuilder.andWhere('ipo.listingAt ilike :listingAt', {
+        listingAt: `%${getIpoListDto.categoryType}%`,
+      });
+    }
+
+    if (getIpoListDto.todayAllotment) {
+      queryBuilder.andWhere('timeline.basisOfAllotment = :currentDate', {
+        currentDate,
+      });
+    }
+
+    return queryBuilder;
   }
 
-  async findIPOs(ipoType: IpoType) {
+  async findIPOs(ipoType: IpoStatusType) {
     const currentDate = new Date();
     const futureIpoQuery = await this.ipoDetailsRepository
       .createQueryBuilder('ipo')
