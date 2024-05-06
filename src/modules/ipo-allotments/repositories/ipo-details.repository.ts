@@ -7,6 +7,7 @@ import * as moment from 'moment-timezone';
 import { AllotmentStatus, Contacts, Registrar } from 'src/frameworks/entities';
 import { GetIpoListDto, IpoDetailsDto } from '../dto';
 import { IpoStatusType, IpoType } from '../enum';
+import { IpoTodayALlotmentStatus } from '../enum/ipo-today-allotment.enum';
 
 @Injectable()
 export class IpoDetailsRepository {
@@ -36,6 +37,7 @@ export class IpoDetailsRepository {
   async findIPOList(getIpoListDto: GetIpoListDto): Promise<IpoDetails[]> {
     let queryBuilder = await this.ipoDetailsRepository
       .createQueryBuilder('ipo')
+      .select(['ipo', 'timeline'])
       .leftJoin(
         'ipo.timelines',
         'timeline',
@@ -44,17 +46,16 @@ export class IpoDetailsRepository {
 
     queryBuilder = await this.filterIpoListQuery(queryBuilder, getIpoListDto);
 
-    if (getIpoListDto.type === IpoStatusType.Listed) {
+    if (getIpoListDto.type === IpoStatusType.Upcoming) {
       return queryBuilder
-        .orderBy('ipo.listing_date', 'DESC')
-        .limit(getIpoListDto.limit)
-        .offset(getIpoListDto.offset)
+        .orderBy('ipo.ipoOpenDate', 'ASC')
+        .addOrderBy('ipo.listingDate', 'ASC')
         .getMany();
     }
-
     return queryBuilder
-      .orderBy('ipo.ipoOpenDate', 'ASC')
-      .addOrderBy('ipo.listingDate', 'ASC')
+      .orderBy('ipo.listingDate', 'DESC')
+      .limit(getIpoListDto.limit)
+      .offset(getIpoListDto.offset)
       .getMany();
   }
 
@@ -77,18 +78,27 @@ export class IpoDetailsRepository {
     }
 
     if (getIpoListDto.name) {
-      queryBuilder = queryBuilder.andWhere('ipo.companyName like :name', {
+      queryBuilder = queryBuilder.andWhere('ipo.companyName ilike :name', {
         name: `%${getIpoListDto.name}%`,
       });
     }
 
-    if (getIpoListDto.categoryType) {
+    if (getIpoListDto.categoryType === IpoType.SME) {
       queryBuilder = queryBuilder.andWhere('ipo.listingAt ilike :listingAt', {
-        listingAt: `%${getIpoListDto.categoryType}%`,
+        listingAt: `%SME%`,
       });
     }
 
-    if (getIpoListDto.todayAllotment) {
+    if (getIpoListDto.categoryType === IpoType.MAINLINE) {
+      queryBuilder = queryBuilder.andWhere(
+        'ipo.listingAt NOT ilike :listingAt',
+        {
+          listingAt: `%SME%`,
+        },
+      );
+    }
+
+    if (getIpoListDto.todayAllotment === IpoTodayALlotmentStatus.YES) {
       queryBuilder.andWhere('timeline.basisOfAllotment = :currentDate', {
         currentDate,
       });

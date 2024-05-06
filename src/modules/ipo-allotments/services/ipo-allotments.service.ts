@@ -87,7 +87,6 @@ export class IpoAllotmentService {
     switch (ipo.ipoRegistrar['register_name']) {
       case RegistrarList.BigShareServicesPvtLtd:
         return this.bigShareIpoAllotment(ipo, payload);
-
       case RegistrarList.LinkInTimeIndiaPrivateLtd:
         return this.linkInTimeIpoAllotment(ipo, payload);
       case RegistrarList.MaashitlaSecuritiesPrivateLimited:

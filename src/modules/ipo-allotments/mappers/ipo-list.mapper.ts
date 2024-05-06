@@ -25,6 +25,7 @@ export class IpoListMapper {
         ipoRegistrar: ipoDetails.ipoRegistrar,
         ipoAllotmentStatus: ipoDetails.ipoAllotmentStatus,
         ipoAllotmentRequiredPayload: ipoDetails.ipoAllotmentRequiredPayload,
+        timeline: ipoDetails.timelines[0],
       };
     });
   }

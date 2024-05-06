@@ -1,6 +1,7 @@
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { IpoStatusType, IpoType } from '../enum';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IpoTodayALlotmentStatus } from '../enum/ipo-today-allotment.enum';
 
 export class GetIpoListDto {
   @ApiPropertyOptional({
@@ -8,7 +9,7 @@ export class GetIpoListDto {
     enum: IpoStatusType,
   })
   @IsOptional()
-  @IsEnum([IpoStatusType.Upcoming, IpoStatusType.Listed, IpoStatusType.All])
+  @IsEnum([IpoStatusType.Upcoming, IpoStatusType.Listed, IpoStatusType.BOTH])
   type?: IpoStatusType;
 
   @ApiPropertyOptional({ type: String })
@@ -16,17 +17,17 @@ export class GetIpoListDto {
   @IsString()
   name?: string;
 
-  @ApiPropertyOptional({ type: Boolean })
+  @ApiPropertyOptional({ type: String, enum: IpoTodayALlotmentStatus })
   @IsOptional()
-  @IsBoolean()
-  todayAllotment?: boolean;
+  @IsEnum(IpoTodayALlotmentStatus)
+  todayAllotment?: IpoTodayALlotmentStatus;
 
   @ApiPropertyOptional({
     type: String,
     enum: IpoType,
   })
   @IsOptional()
-  @IsEnum([IpoType.MAINLINE, IpoType.SME])
+  @IsEnum([IpoType.MAINLINE, IpoType.SME, IpoType.BOTH])
   categoryType?: IpoType;
 
   @ApiPropertyOptional({ type: Number })
