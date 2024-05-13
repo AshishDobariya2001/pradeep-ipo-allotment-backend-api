@@ -17,7 +17,8 @@ import { SkyLineFinancialService } from './services/skyline-finacial.service';
 import { ContactMapper, IpoListMapper } from './mappers';
 import { MaashitlaSecuritiesService } from './services/maashitla-security.service';
 import { LinkInTimeService } from './services/link-in-time.service';
-import { CemeoIndiaService } from './services/cemeo-india.service';
+import { CameoIndiaService } from './services/cemeo-india.service';
+import { IntegratedSecuritiesService } from './services/integrated-security.service';
 
 @Module({
   imports: [
@@ -41,7 +42,8 @@ import { CemeoIndiaService } from './services/cemeo-india.service';
     ContactMapper,
     IpoListMapper,
     MaashitlaSecuritiesService,
-    CemeoIndiaService,
+    CameoIndiaService,
+    IntegratedSecuritiesService,
   ],
   exports: [
     BigShareService,

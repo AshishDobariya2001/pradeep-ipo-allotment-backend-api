@@ -5,6 +5,7 @@ import * as dbconfig from './frameworks/config/typeorm';
 import { IpoAllotmentsModule } from './modules/ipo-allotments/ipo-allotments.module';
 import { ConfigModule } from '@nestjs/config';
 import { ApiKeyMiddleware } from './frameworks/middleware';
+import { ScrapersModule } from './modules/scrapers/scrapers.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ApiKeyMiddleware } from './frameworks/middleware';
     TypeOrmModule.forRoot(dbconfig.connectConfig),
     IpoAllotmentsModule,
     AllotmentAPIsModule,
+    ScrapersModule,
   ],
   controllers: [],
   providers: [],

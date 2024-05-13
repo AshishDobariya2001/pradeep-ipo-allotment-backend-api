@@ -15,12 +15,10 @@ export class MaashitlaSecuritiesService {
   constructor(
     private ipoAllotmentApi: AllotmentBaseApiService,
     private ipoDetailsRepository: IpoDetailsRepository,
-  ) {
-    // this.getAllotmentStatus();
-  }
+  ) {}
   async getAllotmentStatus(ipo?: IpoDetailsDto) {
     try {
-      const companyName = 'Radiowalla Network Limited IPO';
+      const companyName = ipo.companyName;
 
       const registrar = await this.ipoDetailsRepository.findIpoRegistrarByName(
         RegistrarList.MaashitlaSecuritiesPrivateLimited,

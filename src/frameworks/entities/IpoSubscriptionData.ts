@@ -22,6 +22,9 @@ export class IpoSubscriptionData {
   @Column('json', { name: 'ipo_shares_offered', nullable: true })
   ipoSharesOffered: object | null;
 
+  @Column('json', { name: 'bse_ipo_subscription', nullable: true })
+  bseIpoSubscription: object | null;
+
   @ManyToOne(() => IpoDetails, (ipoDetails) => ipoDetails.ipoSubscriptionData)
   @JoinColumn([{ name: 'ipo_details_id', referencedColumnName: 'id' }])
   ipoDetails: IpoDetails;

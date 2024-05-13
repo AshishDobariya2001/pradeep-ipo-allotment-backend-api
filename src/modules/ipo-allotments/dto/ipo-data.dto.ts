@@ -14,6 +14,7 @@ export class IpoDataValidationDto {
   allotedStock?: string;
   amountAdjusted?: string;
   amountRefundedUnblocked?: string;
+  refundMode?: string;
   dateOfCreditOfShares?: string;
   modeOfPayment?: string;
   reasonOfNonAllotment?: string;
@@ -26,4 +27,5 @@ export class IpoDataValidationDto {
   amtadj?: string;
   invCode?: string;
   bnkCode?: string;
+  identityData?: string;
 }

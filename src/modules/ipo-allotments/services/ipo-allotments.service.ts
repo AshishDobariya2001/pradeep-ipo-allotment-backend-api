@@ -20,6 +20,8 @@ import { Registrar } from 'src/frameworks/entities';
 import { BusinessRuleException } from 'src/frameworks/exceptions';
 import { MaashitlaSecuritiesService } from './maashitla-security.service';
 import { LinkInTimeService } from './link-in-time.service';
+import { IntegratedSecuritiesService } from './integrated-security.service';
+import { CameoIndiaService } from './cemeo-india.service';
 
 @Injectable()
 export class IpoAllotmentService {
@@ -32,6 +34,8 @@ export class IpoAllotmentService {
     private ipoListMapper: IpoListMapper,
     private maashitlaService: MaashitlaSecuritiesService,
     private linkInTimeService: LinkInTimeService,
+    private integratedSecuritiesService: IntegratedSecuritiesService,
+    private cameoIndiaService: CameoIndiaService,
   ) {}
 
   async getRegistrar(): Promise<Registrar[]> {
@@ -95,6 +99,10 @@ export class IpoAllotmentService {
         return this.kFinIpoAllotment(ipo, payload);
       case RegistrarList.SkylineFinancialServicesPrivateLtd:
         return this.skyLineAllotment(ipo, payload);
+      case RegistrarList.IntegratedRegistryManagementServicesPrivateLimited:
+        return this.integratedSecuritiesIpoAllotment(ipo, payload);
+      case RegistrarList.CameoCorporateServicesLimited:
+        return this.cameoCorporateIpoAllotment(ipo, payload);
       default:
         throw new BadRequestException(ERROR.WE_DID_NOT_HAVE_THIS_REGISTRAR);
         break;
@@ -168,6 +176,7 @@ export class IpoAllotmentService {
         data: allotment.userAllotment?.data,
         allotmentStatus: allotment.userAllotment.allotmentStatus,
         appliedStock: allotment.userAllotment?.appliedStock,
+        allotedStock: allotment.userAllotment?.allotedStock,
       });
       userAllotment['contact'] = contact;
       return userAllotment;
@@ -175,7 +184,54 @@ export class IpoAllotmentService {
     userAllotment['contact'] = contact;
     return userAllotment;
   }
-
+  async cameoCorporateIpoAllotment(
+    ipo: IpoDetailsDto,
+    payload?: IPOHandleRegistrarDto,
+  ) {
+    let companyAllotment;
+    let userAllotment;
+    if (payload.checkCompanyStatus) {
+      companyAllotment = await this.cameoIndiaService.getAllotmentStatus(ipo);
+    }
+    if (payload.checkUserAllotmentStatus) {
+      userAllotment = await this.cameoIndiaService.getUserAllotmentStatus(
+        payload.registrar,
+        payload.panNumber,
+        ipo.ipoAllotmentRequiredPayload
+          ? ipo.ipoAllotmentRequiredPayload
+          : companyAllotment,
+      );
+    }
+    return {
+      companyAllotment: companyAllotment,
+      userAllotment: userAllotment,
+    };
+  }
+  async integratedSecuritiesIpoAllotment(
+    ipo: IpoDetailsDto,
+    payload?: IPOHandleRegistrarDto,
+  ) {
+    let companyAllotment;
+    let userAllotment;
+    if (payload.checkCompanyStatus) {
+      companyAllotment =
+        await this.integratedSecuritiesService.getAllotmentStatus(ipo);
+    }
+    if (payload.checkUserAllotmentStatus) {
+      userAllotment =
+        await this.integratedSecuritiesService.getUserAllotmentStatus(
+          payload.registrar,
+          payload.panNumber,
+          ipo.ipoAllotmentRequiredPayload
+            ? ipo.ipoAllotmentRequiredPayload
+            : companyAllotment,
+        );
+    }
+    return {
+      companyAllotment: companyAllotment,
+      userAllotment: userAllotment,
+    };
+  }
   async linkInTimeIpoAllotment(
     ipo: IpoDetailsDto,
     payload?: IPOHandleRegistrarDto,
