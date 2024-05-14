@@ -39,6 +39,7 @@ export class KFinTechService {
 
           if (foundIpo && !ipo.ipoAllotmentRequiredPayload) {
             await this.ipoDetailsRepository.update(ipo.id, {
+              ipoAllotmentStatus: true,
               ipoAllotmentRequiredPayload: foundIpo,
             });
           }

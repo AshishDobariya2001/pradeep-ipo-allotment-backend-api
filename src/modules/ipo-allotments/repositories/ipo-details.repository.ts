@@ -64,7 +64,7 @@ export class IpoDetailsRepository {
 
     if (getIpoListDto.type === IpoStatusType.Upcoming) {
       queryBuilder = queryBuilder.where(
-        'ipo.ipoOpenDate IS NULL OR (ipo.ipoOpenDate IS NOT NULL AND :currentDate <=timeline.basisOfAllotment )',
+        'ipo.ipoOpenDate IS NULL OR (ipo.ipoOpenDate IS NOT NULL AND :currentDate < ipo.listingDate )',
         { currentDate },
       );
     }
@@ -72,7 +72,7 @@ export class IpoDetailsRepository {
     if (getIpoListDto.type === IpoStatusType.Listed) {
       queryBuilder = queryBuilder
         .where('ipo.ipo_open_date IS NOT NULL')
-        .andWhere('(timeline.basisOfAllotment < :currentDate)', {
+        .andWhere('(ipo.listingDate <= :currentDate)', {
           currentDate,
         });
     }

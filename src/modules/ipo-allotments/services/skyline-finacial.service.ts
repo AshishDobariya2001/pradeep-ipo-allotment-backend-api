@@ -8,6 +8,7 @@ import { RegistrarList } from '../enum';
 import { Registrar } from 'src/frameworks/entities';
 import { ERROR, HttpStatusCode } from 'src/frameworks/error-code';
 import { IpoAllotmentStatus } from '../enum/ipo-allotment-status.enum';
+import { compareNameWithIpo } from 'src/frameworks/function';
 
 @Injectable()
 export class SkyLineFinancialService {
@@ -25,12 +26,10 @@ export class SkyLineFinancialService {
       const response = await this.ipoAllotmentApi.get(registrar.serverUrl[0]);
       const companyList = this.parseIpoList(response);
 
-      const foundIpo = companyList.find((ipo) =>
-        ipo.ipo_name.toLowerCase().includes(companyName.toLowerCase()),
-      );
-
+      const foundIpo = compareNameWithIpo(companyName, companyList);
       if (foundIpo && !ipo.ipoAllotmentRequiredPayload) {
         await this.ipoDetailsRepository.update(ipo.id, {
+          ipoAllotmentStatus: true,
           ipoAllotmentRequiredPayload: foundIpo,
         });
       }
