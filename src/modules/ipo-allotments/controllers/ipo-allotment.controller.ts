@@ -12,10 +12,11 @@ import { IpoAllotmentService } from '../services';
 import {
   AddPanCardDto,
   GetContactDto,
+  GetIpoAllotmentStatusDto,
   GetIpoListDto,
   IpoAllotmentContactDto,
 } from '../dto';
-import { AllotmentStatus, Registrar } from 'src/frameworks/entities';
+import { Registrar } from 'src/frameworks/entities';
 import { GetContactResponseDto } from '../models';
 
 @ApiTags('company allotment')
@@ -27,6 +28,19 @@ import { GetContactResponseDto } from '../models';
 @Controller({ version: '1' })
 export class AllotmentController {
   constructor(private readonly ipoAllotmentService: IpoAllotmentService) {}
+
+  @ApiOperation({
+    summary: 'Get allotment status by IPO registrar company name',
+  })
+  @HttpCode(200)
+  @Get('company/allotment-status')
+  async findIpoAllotmentStatusByRegistrarCompanyName(
+    @Query() getAllotmentStatusDto: GetIpoAllotmentStatusDto,
+  ) {
+    return this.ipoAllotmentService.findIpoAllotmentStatusByRegistrarCompanyName(
+      getAllotmentStatusDto,
+    );
+  }
 
   @ApiOperation({ summary: 'add contact' })
   @HttpCode(200)
@@ -55,6 +69,13 @@ export class AllotmentController {
       id,
       ipoAllotmentContactDto,
     );
+  }
+
+  @ApiOperation({ summary: 'ipo contact allotment status' })
+  @HttpCode(200)
+  @Get('company/:id')
+  async allotmentCheck(@Param('id') id: string) {
+    return this.ipoAllotmentService.findAllotmentOfStockIsOutOrNot(id);
   }
 
   @ApiOperation({ summary: 'ipo list sme + mainline' })

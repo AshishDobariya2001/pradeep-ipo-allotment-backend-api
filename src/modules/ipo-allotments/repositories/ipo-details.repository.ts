@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IpoDetails } from 'src/frameworks/entities/IpoDetails';
 import { Timeline } from 'src/frameworks/entities/Timeline';
-import { In, Repository } from 'typeorm';
+import { In, Repository, ILike } from 'typeorm';
 import * as moment from 'moment-timezone';
 import { AllotmentStatus, Contacts, Registrar } from 'src/frameworks/entities';
 import { GetIpoListDto, IpoDetailsDto } from '../dto';
@@ -163,6 +163,13 @@ export class IpoDetailsRepository {
       },
     });
   }
+
+  async findByCompanyName(companyName: string) {
+    return this.ipoDetailsRepository.findOne({
+      where: { companyName: ILike(`%${companyName}%`) },
+    });
+  }
+
   async findAllotmentStatusByCompanyIdAndContactId(
     companyId: string,
   ): Promise<AllotmentStatus> {

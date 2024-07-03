@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-lines-per-function */
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { IpoDetailsRepository } from '../repositories/ipo-details.repository';
@@ -6,6 +7,7 @@ import { BigShareService } from '.';
 import {
   AddPanCardDto,
   GetContactDto,
+  GetIpoAllotmentStatusDto,
   GetIpoListDto,
   IPOHandleRegistrarDto,
   IpoAllotmentContactDto,
@@ -22,6 +24,8 @@ import { MaashitlaSecuritiesService } from './maashitla-security.service';
 import { LinkInTimeService } from './link-in-time.service';
 import { IntegratedSecuritiesService } from './integrated-security.service';
 import { CameoIndiaService } from './cemeo-india.service';
+import { MassSecuritiesService } from './mass.service';
+import { PurvaShareService } from './purva-share.service';
 
 @Injectable()
 export class IpoAllotmentService {
@@ -36,7 +40,44 @@ export class IpoAllotmentService {
     private linkInTimeService: LinkInTimeService,
     private integratedSecuritiesService: IntegratedSecuritiesService,
     private cameoIndiaService: CameoIndiaService,
+    private massSecuritiesService: MassSecuritiesService,
+    private purvaShareService: PurvaShareService,
   ) {}
+
+  async findIpoAllotmentStatusByRegistrarCompanyName(
+    getAllotmentStatusDto: GetIpoAllotmentStatusDto,
+  ) {
+    let company;
+    if (getAllotmentStatusDto.id) {
+      company = await this.ipoDetailsRepository.findOne(
+        getAllotmentStatusDto.id,
+      );
+    } else {
+      company = await this.ipoDetailsRepository.findByCompanyName(
+        getAllotmentStatusDto.originalCompanyName,
+      );
+    }
+
+    const allotmentStatus = await this.handleRegistrar(
+      {
+        id: company.id,
+        companyName: getAllotmentStatusDto.companyName,
+        ipoRegistrar: company.ipoRegistrar,
+        ipoAllotmentRequiredPayload: company.ipoAllotmentRequiredPayload,
+      },
+      {
+        checkCompanyStatus: true,
+      },
+    );
+    if (allotmentStatus) {
+      await this.ipoDetailsRepository.update(company.id, {
+        ipoAllotmentRequiredPayload: allotmentStatus.companyAllotment,
+      });
+    }
+    return {
+      companyAllotment: allotmentStatus.companyAllotment,
+    };
+  }
 
   async getRegistrar(): Promise<Registrar[]> {
     return this.ipoDetailsRepository.findRegistrarList();
@@ -70,20 +111,55 @@ export class IpoAllotmentService {
       getContactDto.panNumbers,
     );
     return this.contactMapper.mapAll(contacts);
-
-    return {
-      contacts: contacts,
-    };
   }
 
-  async findTodayListingIpoStock() {
-    const todayAwaitAllotmentsStock =
-      await this.ipoDetailsRepository.findIPOWithTodayBasisOfAllotment();
+  // async findTodayListingIpoStock() {
+  //   const todayAwaitAllotmentsStock =
+  //     await this.ipoDetailsRepository.findIPOWithTodayBasisOfAllotment();
 
-    for (const todayOpenAllotmentIpo of todayAwaitAllotmentsStock) {
-      await this.handleRegistrar(todayOpenAllotmentIpo, {
-        checkCompanyStatus: true,
-      });
+  //   for (const todayOpenAllotmentIpo of todayAwaitAllotmentsStock) {
+  //     await this.handleRegistrar(todayOpenAllotmentIpo, {
+  //       checkCompanyStatus: true,
+  //     });
+  //   }
+  // }
+
+  async findAllotmentOfStockIsOutOrNot(ipoId: string) {
+    try {
+      const company = await this.ipoDetailsRepository.findOne(ipoId);
+      if (!company) {
+        throw new Error('Company not found');
+      }
+
+      let allotment = company.ipoAllotmentRequiredPayload;
+      if (!allotment) {
+        allotment = await this.handleRegistrar(
+          {
+            id: company.id,
+            companyName: company.companyName,
+            ipoRegistrar: company.ipoRegistrar,
+          },
+          {
+            checkCompanyStatus: true,
+          },
+        );
+        if (allotment['companyAllotment'])
+          await this.ipoDetailsRepository.update(company.id, {
+            ipoAllotmentRequiredPayload: allotment['companyAllotment'],
+          });
+        allotment = allotment['companyAllotment'];
+      }
+
+      return {
+        success: true,
+        status: Boolean(allotment),
+        allotment: allotment,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
     }
   }
 
@@ -103,6 +179,10 @@ export class IpoAllotmentService {
         return this.integratedSecuritiesIpoAllotment(ipo, payload);
       case RegistrarList.CameoCorporateServicesLimited:
         return this.cameoCorporateIpoAllotment(ipo, payload);
+      case RegistrarList.MasServicesLimited:
+        return this.massSecuritiesIpoAllotment(ipo, payload);
+      case RegistrarList.PurvaSharegistryIndiaPvtLtd:
+        return this.purvaShareIpoAllotment(ipo, payload);
       default:
         throw new BadRequestException(ERROR.WE_DID_NOT_HAVE_THIS_REGISTRAR);
         break;
@@ -183,6 +263,54 @@ export class IpoAllotmentService {
     }
     userAllotment['contact'] = contact;
     return userAllotment;
+  }
+  async purvaShareIpoAllotment(
+    ipo: IpoDetailsDto,
+    payload?: IPOHandleRegistrarDto,
+  ) {
+    let companyAllotment;
+    let userAllotment;
+    if (payload.checkCompanyStatus) {
+      companyAllotment = await this.purvaShareService.getAllotmentStatus(ipo);
+    }
+    if (payload.checkUserAllotmentStatus) {
+      userAllotment = await this.purvaShareService.getUserAllotmentStatus(
+        payload.registrar,
+        payload.panNumber,
+        ipo.ipoAllotmentRequiredPayload
+          ? ipo.ipoAllotmentRequiredPayload
+          : companyAllotment,
+      );
+    }
+    return {
+      companyAllotment: companyAllotment,
+      userAllotment: userAllotment,
+    };
+  }
+
+  async massSecuritiesIpoAllotment(
+    ipo: IpoDetailsDto,
+    payload?: IPOHandleRegistrarDto,
+  ) {
+    let companyAllotment;
+    let userAllotment;
+    if (payload.checkCompanyStatus) {
+      companyAllotment =
+        await this.massSecuritiesService.getAllotmentStatus(ipo);
+    }
+    if (payload.checkUserAllotmentStatus) {
+      userAllotment = await this.massSecuritiesService.getUserAllotmentStatus(
+        payload.registrar,
+        payload.panNumber,
+        ipo.ipoAllotmentRequiredPayload
+          ? ipo.ipoAllotmentRequiredPayload
+          : companyAllotment,
+      );
+    }
+    return {
+      companyAllotment: companyAllotment,
+      userAllotment: userAllotment,
+    };
   }
   async cameoCorporateIpoAllotment(
     ipo: IpoDetailsDto,

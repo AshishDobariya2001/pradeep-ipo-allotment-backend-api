@@ -50,7 +50,6 @@ export class IntegratedSecuritiesService {
       const ipoCode = $(this).attr('value');
       const ipoName = $(this).text();
       if (ipoCode !== '0') {
-        // Exclude the placeholder option
         companyList.push({ ipo_code: ipoCode, ipo_name: ipoName });
       }
     });
@@ -102,17 +101,14 @@ export class IntegratedSecuritiesService {
 
     let status: IpoAllotmentStatus;
     if (data['Allotted'] !== undefined && data['Allotted'] !== null) {
-      // Parse 'Allotted' as a number
       const allotedStock = Number(data['Allotted']);
 
-      // Check if 'Allotted' is greater than 0
       if (allotedStock > 0) {
         status = IpoAllotmentStatus.ALLOTED;
       } else {
         status = IpoAllotmentStatus.NON_ALLOTTED;
       }
     } else {
-      // Handle the case where 'Allotted' is undefined or null
       status = IpoAllotmentStatus.NOT_APPLIED;
     }
     return {

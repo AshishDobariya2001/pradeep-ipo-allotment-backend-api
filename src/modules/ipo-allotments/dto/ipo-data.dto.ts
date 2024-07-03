@@ -1,4 +1,3 @@
-import { IsString } from 'class-validator';
 import { IpoAllotmentStatus } from '../enum/ipo-allotment-status.enum';
 
 export class IpoDataValidationDto {
@@ -28,4 +27,5 @@ export class IpoDataValidationDto {
   invCode?: string;
   bnkCode?: string;
   identityData?: string;
+  clientId?: string;
 }

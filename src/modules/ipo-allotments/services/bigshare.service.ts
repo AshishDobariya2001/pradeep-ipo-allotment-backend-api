@@ -65,7 +65,6 @@ export class BigShareService {
       txtClId: '',
       ddlType: '0',
     };
-
     for (const url of registrar.allotmentUrl) {
       try {
         const response = await this.ipoAllotmentApi.post(url, payload);
@@ -87,6 +86,7 @@ export class BigShareService {
     throw new BusinessRuleException(ERROR.UNABLE_TO_FETCH_ALLOTMENT_STATUS);
   }
   async parseAllotmentData(response): Promise<IpoDataValidationDto> {
+    console.log(response);
     let status: IpoAllotmentStatus;
     if (response['APPLICATION_NO'] === '') {
       status = IpoAllotmentStatus.NOT_APPLIED;
@@ -100,7 +100,8 @@ export class BigShareService {
       dpNumber: response['DPID'],
       applicantName: response['Name'],
       appliedStock: response['APPLIED'],
-      allotedStock: response['ALLOTED'],
+      allotedStock:
+        response['ALLOTED'] === 'NON-ALLOTTE' ? 0 : response['ALLOTED'],
       status: status,
     };
     return data;

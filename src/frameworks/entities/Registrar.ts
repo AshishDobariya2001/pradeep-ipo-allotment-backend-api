@@ -12,7 +12,7 @@ export class Registrar {
   serverUrl: string[] | null;
 
   @Column('text', { name: 'allotment_url', nullable: true, array: true })
-  allotmentUrl: string[] | null;
+  allotmentUrl: string[];
 
   @Column('boolean', { name: 'is_active', nullable: true })
   isActive: boolean;

@@ -16,26 +16,44 @@ export function compareNameWithIpo(companyName: string, companyList) {
   return foundIpo;
 }
 
-function compareNameByPercentage(databaseCompanyName, ipoName: string): number {
-  if (databaseCompanyName && ipoName) {
-    const databaseNameWords = databaseCompanyName
-      .toLowerCase()
-      .split(/\b(ltd|limited)\b/g)[0];
+export function compareNameByPercentage(databaseCompanyName, companyName) {
+  const databaseWords = cleanAndSplitCompanyName(databaseCompanyName);
+  const ipoWords = cleanAndSplitCompanyName(companyName);
 
-    ipoName = ipoName
-      .toLowerCase()
-      .split(/\b(ltd|limited)\b/g)[0]
-      .toLowerCase();
+  let totalPercentage = 0;
+  const wordPairs = Math.max(databaseWords.length, ipoWords.length);
 
-    const companyNameWords = ipoName.toLowerCase().split(/\s+/);
-    let matchingWords = 0;
-    for (const word of companyNameWords) {
-      if (databaseNameWords.includes(word)) {
-        matchingWords++;
-      }
-    }
-    const matchingPercentage = (matchingWords / companyNameWords.length) * 100;
-    return matchingPercentage;
+  for (let i = 0; i < wordPairs; i++) {
+    const dbWord = databaseWords[i] || '';
+    const ipoWord = ipoWords[i] || '';
+    totalPercentage += calculateWordSimilarity(dbWord, ipoWord);
   }
-  return 0;
+
+  const matchingPercentage = totalPercentage / wordPairs;
+
+  return matchingPercentage;
+}
+
+function cleanAndSplitCompanyName(name) {
+  return name
+    .toLowerCase()
+    .replace(/\b(ltd|limited|pvt|ipo|' - ')\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ');
+}
+
+function calculateWordSimilarity(word1, word2) {
+  const len1 = word1.length;
+  const len2 = word2.length;
+  const maxLen = Math.max(len1, len2);
+  let matchCount = 0;
+
+  for (let i = 0; i < maxLen; i++) {
+    if (word1[i] === word2[i]) {
+      matchCount++;
+    }
+  }
+
+  return (matchCount / maxLen) * 100;
 }

@@ -166,7 +166,10 @@ export class CameoIndiaService {
     }
 
     return {
-      applicantName: rowData['HOLD1'],
+      applicantName:
+        allotmentStatus === IpoAllotmentStatus.NOT_APPLIED
+          ? null
+          : rowData['HOLD1'],
       allotedStock: rowData['ALLOTED_SHARES'],
       status: allotmentStatus,
       amountRefundedUnblocked: rowData['REFUND_AMOUNT'],

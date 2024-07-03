@@ -19,6 +19,8 @@ import { MaashitlaSecuritiesService } from './services/maashitla-security.servic
 import { LinkInTimeService } from './services/link-in-time.service';
 import { CameoIndiaService } from './services/cemeo-india.service';
 import { IntegratedSecuritiesService } from './services/integrated-security.service';
+import { MassSecuritiesService } from './services/mass.service';
+import { PurvaShareService } from './services/purva-share.service';
 
 @Module({
   imports: [
@@ -44,6 +46,8 @@ import { IntegratedSecuritiesService } from './services/integrated-security.serv
     MaashitlaSecuritiesService,
     CameoIndiaService,
     IntegratedSecuritiesService,
+    MassSecuritiesService,
+    PurvaShareService,
   ],
   exports: [
     BigShareService,
