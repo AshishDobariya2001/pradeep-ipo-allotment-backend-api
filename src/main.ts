@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { ENDPOINT_PREFIX, PORT } from './frameworks/environment';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { UserPlatformType } from './frameworks/enums';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -26,14 +27,25 @@ async function bootstrap() {
 
 function initializeSwagger(app) {
   const config = new DocumentBuilder()
+    .addBearerAuth()
     .setTitle('IPO Allotment API')
     .setDescription('IPO Allotment API')
     .setVersion('v1')
-    .addSecurity('apiKey', {
-      type: 'apiKey',
+    // .addSecurity('apiKey', {
+    //   type: 'apiKey',
+    //   in: 'header',
+    //   name: 'x-api-key',
+    //   description: 'API Key for authentication',
+    // })
+    .addGlobalParameters({
+      name: 'x-user-platform',
       in: 'header',
-      name: 'x-api-key',
-      description: 'API Key for authentication',
+      required: false,
+      description: `User platform header. Allowed values: ${Object.values(UserPlatformType).join(', ')}`, // {{ edit_2 }}
+      schema: {
+        type: 'string',
+        enum: Object.values(UserPlatformType),
+      },
     })
     .build();
 

@@ -84,8 +84,10 @@ export class IpoAllotmentService {
   }
 
   async getIpoList(getIpoListDto: GetIpoListDto) {
-    const ipos = await this.ipoDetailsRepository.findIPOList(getIpoListDto);
-    return this.ipoListMapper.mapAll(ipos);
+    const ipoList = await this.ipoDetailsRepository.findIPOList(getIpoListDto);
+    const ipos = this.ipoListMapper.mapAll(ipoList.ipos);
+    ipos[0]['totalCount'] = ipoList.totalCount;
+    return ipos;
   }
 
   async addPancard(
@@ -264,6 +266,7 @@ export class IpoAllotmentService {
     userAllotment['contact'] = contact;
     return userAllotment;
   }
+
   async purvaShareIpoAllotment(
     ipo: IpoDetailsDto,
     payload?: IPOHandleRegistrarDto,

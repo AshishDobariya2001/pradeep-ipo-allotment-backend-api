@@ -34,6 +34,7 @@ const connectConfig: TypeOrmModuleOptions = {
     Contacts,
     AllotmentStatus,
     Users,
+    UserContacts,
   ],
   logging: ENVIRONMENT === 'local',
   synchronize: false,

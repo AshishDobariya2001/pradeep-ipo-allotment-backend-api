@@ -56,6 +56,7 @@ export class SkyLineFinancialService {
     companyList.shift();
     return companyList;
   }
+
   async getUserAllotmentStatus(
     registrar?: Registrar,
     panNumber?: string,

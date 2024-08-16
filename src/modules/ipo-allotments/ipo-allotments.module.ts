@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { BigShareService } from './services';
 import { AllotmentAPIsModule } from 'src/connectors/allotment/allotment.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -21,6 +21,7 @@ import { CameoIndiaService } from './services/cemeo-india.service';
 import { IntegratedSecuritiesService } from './services/integrated-security.service';
 import { MassSecuritiesService } from './services/mass.service';
 import { PurvaShareService } from './services/purva-share.service';
+import { ApiKeyMiddleware } from 'src/frameworks/middleware';
 
 @Module({
   imports: [
@@ -56,4 +57,11 @@ import { PurvaShareService } from './services/purva-share.service';
     IpoAllotmentService,
   ],
 })
-export class IpoAllotmentsModule {}
+export class IpoAllotmentsModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(ApiKeyMiddleware)
+      // .exclude('v1/auth/(.*)', 'v1/user/contacts/(.*)')
+      .forRoutes(AllotmentController);
+  }
+}

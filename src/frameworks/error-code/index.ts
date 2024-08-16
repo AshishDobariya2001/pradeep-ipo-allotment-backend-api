@@ -1,4 +1,20 @@
 export const ERROR = {
+  USER_ALREADY_EXISTS: {
+    message: 'User already exists',
+    code: 'USER_ALREADY_EXISTS',
+  },
+  USER_NOT_FOUND: {
+    message: 'User not found',
+    code: 'USER_NOT_FOUND',
+  },
+  UNAUTHORIZED: {
+    message: 'Unauthorized access',
+    code: 'UNAUTHORIZED',
+  },
+  INVALID_PLATFORM: {
+    message: 'invalid platform',
+    code: 'INVALID_PLATFORM',
+  },
   UNABLE_TO_FETCH_COMPANY_LIST: {
     message: 'Failed to fetch company list',
     code: 'UNABLE_TO_FETCH_COMPANY_LIST',
@@ -18,6 +34,14 @@ export const ERROR = {
   WE_DID_NOT_HAVE_THIS_REGISTRAR: {
     message: 'We did not have this registrar',
     code: 'WE_DID_NOT_HAVE_THIS_REGISTRAR',
+  },
+  INVALID_PIN: {
+    message: 'Invalid pin',
+    code: 'INVALID_PIN',
+  },
+  CONTACT_IS_NOT_FOUND: {
+    message: 'Contact is not found',
+    code: 'CONTACT_IS_NOT_FOUND',
   },
 };
 export enum HttpStatusCode {
