@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IpoDetails, Users } from 'src/frameworks/entities';
-import { GetIpoListDto } from 'src/modules/ipo-allotments/dto';
+// import { GetIpoListDto } from 'src/modules/ipo-allotments/dto';
 import {
   IpoCategoryType,
   IpoStatusType,
@@ -9,7 +9,7 @@ import {
 } from 'src/modules/ipo-allotments/enum';
 import { IpoTodayALlotmentStatus } from 'src/modules/ipo-allotments/enum/ipo-today-allotment.enum';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { IpoCalendarList } from '../dtos';
+import { FetchIpoListRequestDto, IpoCalendarList } from '../dtos';
 
 @Injectable()
 export class IPODetailsRepository {
@@ -30,7 +30,7 @@ export class IPODetailsRepository {
     });
   }
 
-  async findStats(getIpoListDto: GetIpoListDto) {
+  async findStats(getIpoListDto: FetchIpoListRequestDto) {
     let queryBuilder = await this.ipoDetailsRepository
       .createQueryBuilder('ipo')
       .select(['ipo', 'timeline'])
@@ -45,17 +45,62 @@ export class IPODetailsRepository {
     return queryBuilder.getCount();
   }
 
-  async filterIpoListQuery(queryBuilder, getIpoListDto: GetIpoListDto) {
+  async fetchIpoList(
+    fetchIpoListRequestDto: FetchIpoListRequestDto,
+  ): Promise<{ totalCount: number; ipos: IpoDetails[] }> {
+    let queryBuilder = await this.ipoDetailsRepository
+      .createQueryBuilder('ipo')
+      .select(['ipo', 'timeline'])
+      .leftJoin(
+        'ipo.timelines',
+        'timeline',
+        'timeline.ipo_details_id = ipo.id',
+      );
+
+    queryBuilder = await this.filterIpoListQuery(
+      queryBuilder,
+      fetchIpoListRequestDto,
+    );
+    const count = await queryBuilder.getCount();
+
+    if (
+      fetchIpoListRequestDto.type === IpoStatusType.Upcoming ||
+      fetchIpoListRequestDto.type === IpoStatusType.LiveAndUpcoming
+    ) {
+      const ipos = await queryBuilder
+        .orderBy('ipo.ipoOpenDate', 'ASC')
+        .addOrderBy('ipo.listingDate', 'ASC')
+        .getMany();
+      return {
+        totalCount: count,
+        ipos: ipos,
+      };
+    }
+
+    console.log(fetchIpoListRequestDto.limit, fetchIpoListRequestDto.offset);
+    const ipos = await queryBuilder
+      .orderBy('ipo.listingDate', 'DESC')
+      .limit(fetchIpoListRequestDto.limit)
+      .offset(fetchIpoListRequestDto.offset)
+      .getMany();
+
+    return {
+      totalCount: count,
+      ipos: ipos,
+    };
+  }
+
+  async filterIpoListQuery(queryBuilder, queryFilter: FetchIpoListRequestDto) {
     const currentDate = new Date();
 
-    if (getIpoListDto.type === IpoStatusType.Upcoming) {
+    if (queryFilter.type === IpoStatusType.Upcoming) {
       queryBuilder = queryBuilder.where(
         'ipo.ipoOpenDate IS NULL OR (ipo.ipoOpenDate IS NOT NULL AND :currentDate < ipo.ipoOpenDate)',
         { currentDate },
       );
     }
 
-    if (getIpoListDto.type === IpoStatusType.Listed) {
+    if (queryFilter.type === IpoStatusType.Listed) {
       queryBuilder = queryBuilder
         .where('ipo.ipo_open_date IS NOT NULL')
         .andWhere('(ipo.listingDate <= :currentDate)', {
@@ -63,7 +108,7 @@ export class IPODetailsRepository {
         });
     }
 
-    if (getIpoListDto.type === IpoStatusType.Live) {
+    if (queryFilter.type === IpoStatusType.Live) {
       queryBuilder = queryBuilder.where(
         ':currentDate >= ipo.ipoOpenDate AND :currentDate <= ipo.ipoCloseDate',
         {
@@ -72,19 +117,26 @@ export class IPODetailsRepository {
       );
     }
 
-    if (getIpoListDto.name) {
+    if (queryFilter.type === IpoStatusType.LiveAndUpcoming) {
+      queryBuilder = queryBuilder.where(
+        'ipo.ipoOpenDate IS NULL OR (ipo.ipoOpenDate IS NOT NULL AND :currentDate < ipo.listingDate )',
+        { currentDate },
+      );
+    }
+
+    if (queryFilter.name) {
       queryBuilder = queryBuilder.andWhere('ipo.companyName ilike :name', {
-        name: `%${getIpoListDto.name}%`,
+        name: `%${queryFilter.name}%`,
       });
     }
 
-    if (getIpoListDto.categoryType === IpoType.SME) {
+    if (queryFilter.categoryType === IpoType.SME) {
       queryBuilder = queryBuilder.andWhere('ipo.listingAt ilike :listingAt', {
         listingAt: `%SME%`,
       });
     }
 
-    if (getIpoListDto.categoryType === IpoType.MAINLINE) {
+    if (queryFilter.categoryType === IpoType.MAINLINE) {
       queryBuilder = queryBuilder.andWhere(
         'ipo.listingAt NOT ilike :listingAt',
         {
@@ -93,7 +145,7 @@ export class IPODetailsRepository {
       );
     }
 
-    if (getIpoListDto.todayAllotment === IpoTodayALlotmentStatus.YES) {
+    if (queryFilter.todayAllotment === IpoTodayALlotmentStatus.YES) {
       queryBuilder.andWhere('timeline.basisOfAllotment = :currentDate', {
         currentDate,
       });
@@ -103,7 +155,7 @@ export class IPODetailsRepository {
   }
 
   async findIpoListWithEqualJoin(ipoCalendarList: IpoCalendarList) {
-    let queryBuilder = await this.ipoDetailsRepository
+    const queryBuilder = await this.ipoDetailsRepository
       .createQueryBuilder('ipo')
       .select(['*'])
       .innerJoin(
@@ -127,7 +179,7 @@ export class IPODetailsRepository {
   }
 
   async findIpoListForCalendar(ipoCalendarList: IpoCalendarList) {
-    let queryBuilder = await this.ipoDetailsRepository
+    const queryBuilder = await this.ipoDetailsRepository
       .createQueryBuilder('ipo')
       .select([
         `
@@ -195,5 +247,20 @@ export class IPODetailsRepository {
         endDate: ipoCalendarList.ipoEndDate,
       });
     }
+  }
+
+  async findById(id: number) {
+    return this.ipoDetailsRepository.findOne({
+      where: { id },
+      relations: [
+        'promoterHoldings',
+        'timelines',
+        'ipoLotSizes',
+        'ipoKpis',
+        'ipoReservations',
+        'ipoSubscriptionData',
+        'stockPrices',
+      ],
+    });
   }
 }

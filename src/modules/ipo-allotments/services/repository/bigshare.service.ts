@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AllotmentBaseApiService } from 'src/connectors/allotment/allotment-base.api';
-import { IpoDetailsRepository } from '../repositories';
-import { RegistrarList } from '../enum';
-import { IpoDataValidationDto, IpoDetailsDto } from '../dto';
+import { IpoDetailsRepository } from '../../repositories';
+import { RegistrarList } from '../../enum';
+import { IpoDataValidationDto, IpoDetailsDto } from '../../dto';
 import { Registrar } from 'src/frameworks/entities';
 import { BusinessRuleException } from 'src/frameworks/exceptions';
 import { ERROR } from 'src/frameworks/error-code';
-import { IpoAllotmentStatus } from '../enum/ipo-allotment-status.enum';
+import { IpoAllotmentStatus } from '../../enum/ipo-allotment-status.enum';
 import cheerio from 'cheerio';
 import { compareNameWithIpo } from 'src/frameworks/function';
 

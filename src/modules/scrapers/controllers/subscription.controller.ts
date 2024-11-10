@@ -14,10 +14,10 @@ export class ScraperController {
     private readonly bSESubscriptionScraperService: BSESubscriptionScraperService,
   ) {}
 
-  @ApiOperation({ summary: 'scraper bse subscription url' })
-  @HttpCode(200)
-  @Post('bse/subscription')
-  async updateSubscriptionDetailsOfCurrentOpenIpo() {
-    return this.bSESubscriptionScraperService.updateSubscriptionDetailsOfCurrentOpenIpo();
-  }
+  // @ApiOperation({ summary: 'scraper bse subscription url' })
+  // @HttpCode(200)
+  // @Post('bse/subscription')
+  // async updateSubscriptionDetailsOfCurrentOpenIpo() {
+  //   return this.bSESubscriptionScraperService.updateSubscriptionDetailsOfCurrentOpenIpo();
+  // }
 }

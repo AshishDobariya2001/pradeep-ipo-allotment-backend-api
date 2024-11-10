@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { AllotmentBaseApiService } from 'src/connectors/allotment/allotment-base.api';
-import { IpoDetailsRepository } from '../repositories';
-import { IpoDataValidationDto, IpoDetailsDto } from '../dto';
-import { IpoAllotmentStatus, RegistrarList } from '../enum';
+import { IpoDetailsRepository } from '../../repositories';
+import { IpoDataValidationDto, IpoDetailsDto } from '../../dto';
+import { IpoAllotmentStatus, RegistrarList } from '../../enum';
 import { BusinessRuleException } from 'src/frameworks/exceptions';
 import { compareNameWithIpo } from 'src/frameworks/function';
 import { ERROR } from 'src/frameworks/error-code';

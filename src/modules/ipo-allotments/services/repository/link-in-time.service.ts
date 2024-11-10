@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable max-lines-per-function */
 import { Injectable } from '@nestjs/common';
-import { IpoDetailsRepository } from '../repositories';
-import { RegistrarList } from '../enum';
-import { IpoDataValidationDto, IpoDetailsDto } from '../dto';
+import { IpoDetailsRepository } from '../../repositories';
+import { RegistrarList } from '../../enum';
+import { IpoDataValidationDto, IpoDetailsDto } from '../../dto';
 import { Registrar } from 'src/frameworks/entities';
 import axios from 'axios';
 import * as https from 'https';
 const CryptoJS = require('crypto-js');
 import { parseString } from 'xml2js';
 import { compareNameWithIpo } from 'src/frameworks/function';
-import { IpoAllotmentStatus } from '../enum/ipo-allotment-status.enum';
+import { IpoAllotmentStatus } from '../../enum/ipo-allotment-status.enum';
 
 @Injectable()
 export class LinkInTimeService {

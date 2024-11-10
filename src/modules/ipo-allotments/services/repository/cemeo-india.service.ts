@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { IpoDetailsRepository } from '../repositories';
+import { IpoDetailsRepository } from '../../repositories';
 import {
   SOLVE_CAPTCHA_API,
   SOLVE_CAPTCHA_API_KEY,
@@ -8,9 +8,9 @@ import {
 import { AllotmentBaseApiService } from 'src/connectors/allotment/allotment-base.api';
 import { Registrar } from 'src/frameworks/entities';
 import * as puppeteer from 'puppeteer';
-import { IpoDataValidationDto, IpoDetailsDto } from '../dto';
+import { IpoDataValidationDto, IpoDetailsDto } from '../../dto';
 import cheerio from 'cheerio';
-import { IpoAllotmentStatus, RegistrarList } from '../enum';
+import { IpoAllotmentStatus, RegistrarList } from '../../enum';
 import { compareNameWithIpo } from 'src/frameworks/function';
 
 @Injectable()

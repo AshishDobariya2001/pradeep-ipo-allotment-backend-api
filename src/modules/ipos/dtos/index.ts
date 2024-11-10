@@ -1,6 +1,10 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
-import { IpoCategoryType } from 'src/modules/ipo-allotments/enum';
+import {
+  IpoCategoryType,
+  IpoStatusType,
+} from 'src/modules/ipo-allotments/enum';
+import { IpoTodayALlotmentStatus, IpoType } from '../enums';
 
 export class IpoCalendarList {
   @ApiPropertyOptional()
@@ -24,4 +28,45 @@ export class AddPanCardDto {
   @IsString()
   @IsOptional()
   pan: string;
+}
+
+export class FetchIpoListRequestDto {
+  @ApiPropertyOptional({
+    type: String,
+    enum: IpoStatusType,
+  })
+  @IsOptional()
+  @IsEnum([
+    IpoStatusType.Live,
+    IpoStatusType.Upcoming,
+    IpoStatusType.Listed,
+    IpoStatusType.LiveAndUpcoming,
+  ])
+  type?: IpoStatusType;
+
+  @ApiPropertyOptional({ type: String })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiPropertyOptional({ type: String, enum: IpoTodayALlotmentStatus })
+  @IsOptional()
+  @IsEnum(IpoTodayALlotmentStatus)
+  todayAllotment?: IpoTodayALlotmentStatus;
+
+  @ApiPropertyOptional({
+    type: String,
+    enum: IpoType,
+  })
+  @IsOptional()
+  @IsEnum([IpoType.MAINLINE, IpoType.SME, IpoType.BOTH])
+  categoryType?: IpoType;
+
+  @ApiPropertyOptional({ type: Number })
+  @IsOptional()
+  limit?: number;
+
+  @ApiPropertyOptional({ type: Number })
+  @IsOptional()
+  offset?: number;
 }

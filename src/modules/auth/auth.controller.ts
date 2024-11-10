@@ -1,16 +1,26 @@
 import { Controller, Body, Post, HttpCode } from '@nestjs/common';
-import { ApiBody, ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { SignUpDto } from './dto/signup.dto';
 import { UserAccessPlatform } from 'src/frameworks/decorators/platform.decorator';
-import { platform } from 'os';
 import { UserPlatformType } from 'src/frameworks/enums';
+import { AccessTokenDto } from './dto';
 
 @ApiTags('Authentication')
 @Controller({ version: '1', path: 'auth' })
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @ApiOperation({ summary: 'sign up using phone number and pin code' })
+  @HttpCode(200)
+  @Post('accessToken')
+  async getAccessToken(
+    @Body() accessTokenDto: AccessTokenDto,
+    @UserAccessPlatform() userAccessPlatform: UserPlatformType,
+  ) {
+    return this.authService.getAccessToken(accessTokenDto, userAccessPlatform);
+  }
 
   @ApiOperation({ summary: 'sign up using phone number and pin code' })
   @HttpCode(200)

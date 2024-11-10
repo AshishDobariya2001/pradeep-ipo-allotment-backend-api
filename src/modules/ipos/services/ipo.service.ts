@@ -1,13 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { IPODetailsRepository } from '../repositories/ipo-details.repository';
 import { IpoStatusType, IpoType } from '../../ipo-allotments/enum';
-import { IpoCalendarList } from '../dtos';
+import { FetchIpoListRequestDto, IpoCalendarList } from '../dtos';
 import { IpoCalendarStatus, IpoCalendarSubStatus } from 'src/frameworks/enums';
 import * as moment from 'moment-timezone';
+import { FetchIpoMapper } from '../mappers/fetch-ipo-list.mapper';
 
 @Injectable()
 export class IPOService {
-  constructor(private ipoDetailsRepository: IPODetailsRepository) {}
+  constructor(
+    private ipoDetailsRepository: IPODetailsRepository,
+    private fetchIpoListMapper: FetchIpoMapper,
+  ) {}
 
   async stats() {
     const mainlineUpcomingCount = await this.ipoDetailsRepository.findStats({
@@ -132,5 +136,21 @@ export class IPOService {
     });
 
     return events;
+  }
+
+  async fetchIpoList(body: FetchIpoListRequestDto) {
+    const ipoList = await this.ipoDetailsRepository.fetchIpoList(body);
+    const ipos = await this.fetchIpoListMapper.mapAll(ipoList?.ipos);
+
+    return {
+      ipos,
+      totalCount: ipoList?.totalCount,
+    };
+  }
+
+  async getById(id: number) {
+    const ipo = await this.ipoDetailsRepository.findById(id);
+    const mappedIpo = await this.fetchIpoListMapper.mapOne(ipo);
+    return mappedIpo;
   }
 }

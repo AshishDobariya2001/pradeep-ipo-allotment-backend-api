@@ -8,41 +8,21 @@ import { ROLES, UserPlatformType } from 'src/frameworks/enums';
 import { SignUpDto } from './dto';
 import { BusinessRuleException } from 'src/frameworks/exceptions';
 import { ERROR } from 'src/frameworks/error-code';
-import * as CryptoJS from 'crypto-js';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userRepository: UserRepository,
     private jwtService: JwtService,
-  ) {
-    this.createTestUserData();
-  }
+  ) {}
 
-  createTestUserData() {
-    console.log('🚀 ~ AuthService ~ createTestUserData ~ createTestUserData:');
-    console.log('inside create');
-    const secretKey = 'your-secret-key';
-
-    const data = {
-      countryCode: '+91',
-      phoneNumber: '7285860835',
-      pin: '123456',
+  async getAccessToken(accessTokenDto, userAccessPlatform) {
+    //if we have phone number so that time include phone number
+    
+    return {
+      accessToken: await this.generatePayload(),
+      data: {},
     };
-    const encryptedData = CryptoJS.AES.encrypt(
-      JSON.stringify(data),
-      secretKey,
-    ).toString();
-
-    console.log(encryptedData);
-    const descryptData =
-      'U2FsdGVkX19WQ8XTeEvaVzb+nx8JuJcsMLvcp2wkzCBIq5ccEiaqYC3MiNgQosAHbKcFiK24rKd8M5n7ARJCMqaerWzqOpm29fww6RDXT0kVQlxkxemX90OyFx54+gCrC+/YEPmoRX36WRAcQJmyc1CmNCS7grhQYJ8gK8+w0sMN4zY6AEYU1fISsGWD4ZUF';
-    const decryptedData = CryptoJS.AES.decrypt(
-      descryptData,
-      secretKey,
-    ).toString(CryptoJS.enc.Utf8);
-
-    console.log(JSON.parse(decryptedData));
   }
 
   async signUp(signUpDto: SignUpDto, userAccessPlatform: UserPlatformType) {
@@ -75,7 +55,7 @@ export class AuthService {
     };
   }
 
-  async generatePayload(userId: number, role: string) {
+  async generatePayload(userId: number = 0, role: string = 'Anonymous') {
     return this.jwtService.signAsync({
       role: role,
       userId: userId,

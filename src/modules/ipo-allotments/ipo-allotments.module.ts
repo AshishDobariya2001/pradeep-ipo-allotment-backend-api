@@ -12,16 +12,17 @@ import {
 import { IpoAllotmentService } from './services/ipo-allotments.service';
 import { IpoDetailsRepository } from './repositories/ipo-details.repository';
 import { AllotmentController } from './controllers/ipo-allotment.controller';
-import { KFinTechService } from './services/kfin.service';
-import { SkyLineFinancialService } from './services/skyline-finacial.service';
+import { KFinTechService } from './services/repository/kfin.service';
+import { SkyLineFinancialService } from './services/repository/skyline-finacial.service';
 import { ContactMapper, IpoListMapper } from './mappers';
-import { MaashitlaSecuritiesService } from './services/maashitla-security.service';
-import { LinkInTimeService } from './services/link-in-time.service';
-import { CameoIndiaService } from './services/cemeo-india.service';
-import { IntegratedSecuritiesService } from './services/integrated-security.service';
-import { MassSecuritiesService } from './services/mass.service';
-import { PurvaShareService } from './services/purva-share.service';
+import { MaashitlaSecuritiesService } from './services/repository/maashitla-security.service';
+import { LinkInTimeService } from './services/repository/link-in-time.service';
+import { CameoIndiaService } from './services/repository/cemeo-india.service';
+import { IntegratedSecuritiesService } from './services/repository/integrated-security.service';
+import { MassSecuritiesService } from './services/repository/mass.service';
+import { PurvaShareService } from './services/repository/purva-share.service';
 import { ApiKeyMiddleware } from 'src/frameworks/middleware';
+import { PuppeteerService } from './services/puppeteer.service';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { ApiKeyMiddleware } from 'src/frameworks/middleware';
     IntegratedSecuritiesService,
     MassSecuritiesService,
     PurvaShareService,
+    PuppeteerService,
   ],
   exports: [
     BigShareService,
@@ -59,9 +61,6 @@ import { ApiKeyMiddleware } from 'src/frameworks/middleware';
 })
 export class IpoAllotmentsModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(ApiKeyMiddleware)
-      // .exclude('v1/auth/(.*)', 'v1/user/contacts/(.*)')
-      .forRoutes(AllotmentController);
+    consumer.apply(ApiKeyMiddleware).forRoutes(AllotmentController);
   }
 }

@@ -24,7 +24,7 @@ import { PassportModule } from '@nestjs/passport';
       signOptions: { expiresIn: `${JWT_ACCESS_EXPIRES_IN_DAYS}d` },
     }),
   ],
-  controllers: [AuthController],
+  controllers: [],
   providers: [AuthService, UserRepository],
   exports: [],
 })

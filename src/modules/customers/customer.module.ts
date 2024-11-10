@@ -12,19 +12,19 @@ import { ContactsController } from './controllers/contacts.controllers';
 import { ContactsService } from './services/contacts.service';
 import { ContactsRepository } from './repositories/contacts.repository';
 
-@Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      IpoDetails,
-      AllotmentStatus,
-      Timeline,
-      Registrar,
-      Contacts,
-      UserContacts,
-    ]),
-  ],
-  controllers: [ContactsController],
-  providers: [ContactsService, ContactsRepository],
-  exports: [ContactsService],
-})
-export class CustomerModule {}
+// @Module({
+//   imports: [
+//     TypeOrmModule.forFeature([
+//       IpoDetails,
+//       AllotmentStatus,
+//       Timeline,
+//       Registrar,
+//       Contacts,
+//       UserContacts,
+//     ]),
+//   ],
+//   controllers: [ContactsController],
+//   providers: [ContactsService, ContactsRepository],
+//   exports: [ContactsService],
+// })
+// export class CustomerModule {}

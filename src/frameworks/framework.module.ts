@@ -7,13 +7,13 @@ import {
 } from 'src/frameworks/environment';
 import { Users } from 'src/frameworks/entities';
 import { JwtStrategy } from './apis/strategy/jwt.strategy';
-import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './apis/guards/jwt-auth.guard';
 import { PassportModule } from '@nestjs/passport';
 import { UserContextRepository } from './apis/repositories/user-context.repository';
+import { ApiModule } from './apis/api.module';
 
 @Module({
   imports: [
+    ApiModule,
     PassportModule,
     TypeOrmModule.forFeature([Users]),
     JwtModule.register({
@@ -26,6 +26,6 @@ import { UserContextRepository } from './apis/repositories/user-context.reposito
   ],
   controllers: [],
   providers: [UserContextRepository, JwtStrategy],
-  exports: [JwtStrategy],
+  exports: [JwtStrategy, ApiModule],
 })
 export class frameworksModule {}
