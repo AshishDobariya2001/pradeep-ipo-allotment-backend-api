@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { AllotmentBaseApiService } from 'src/connectors/allotment/allotment-base.api';
-import { IpoDetailsRepository } from '../repositories';
-import { IpoDataValidationDto, IpoDetailsDto } from '../dto';
-import { RegistrarList } from '../enum';
+import { IpoDetailsRepository } from '../../repositories';
+import { IpoDataValidationDto, IpoDetailsDto } from '../../dto';
+import { RegistrarList } from '../../enum';
 import cheerio from 'cheerio';
 import { ERROR } from 'src/frameworks/error-code';
 import { BusinessRuleException } from 'src/frameworks/exceptions';
 import { compareNameByPercentage } from 'src/frameworks/function';
 import { Registrar } from 'src/frameworks/entities';
-import { IpoAllotmentStatus } from '../enum/ipo-allotment-status.enum';
+import { IpoAllotmentStatus } from '../../enum/ipo-allotment-status.enum';
 
 @Injectable()
 export class MassSecuritiesService {

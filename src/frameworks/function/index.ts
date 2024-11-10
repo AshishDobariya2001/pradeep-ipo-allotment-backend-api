@@ -30,14 +30,23 @@ export function compareNameByPercentage(databaseCompanyName, companyName) {
   }
 
   const matchingPercentage = totalPercentage / wordPairs;
+  console.log(
+    '🚀 ~ compareNameByPercentage ~ matchingPercentage:',
+    databaseWords,
+    ipoWords,
+    matchingPercentage,
+  );
 
   return matchingPercentage;
 }
 
 function cleanAndSplitCompanyName(name) {
-  return name
+  const firstPart = name.toLowerCase().split(/\b(ltd|limited|pvt)\b/)[0];
+  console.log('🚀 ~ cleanAndSplitCompanyName ~ firstPart:', firstPart);
+
+  return firstPart
     .toLowerCase()
-    .replace(/\b(ltd|limited|pvt|ipo|' - ')\b/g, '')
+    .replace(/\b(ltd|limited|pvt|ipo| - |-|sme)\b/g, '')
     .replace(/\s+/g, ' ')
     .trim()
     .split(' ');

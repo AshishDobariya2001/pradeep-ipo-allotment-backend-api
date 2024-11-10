@@ -1,4 +1,4 @@
-import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { IpoStatusType, IpoType } from '../enum';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IpoTodayALlotmentStatus } from '../enum/ipo-today-allotment.enum';

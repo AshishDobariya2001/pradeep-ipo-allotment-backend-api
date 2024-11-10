@@ -34,12 +34,16 @@ const connectConfig: TypeOrmModuleOptions = {
     Contacts,
     AllotmentStatus,
     Users,
+    UserContacts,
   ],
   logging: ENVIRONMENT === 'local',
   synchronize: false,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  migrations: ['dist/migrations/*{.ts,.js}'],
+  migrationsTableName: 'migrations_history',
+  migrationsRun: true,
+  // ssl: {
+  //   rejectUnauthorized: false,
+  // },
 };
 
 const config = {

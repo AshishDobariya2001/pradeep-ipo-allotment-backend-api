@@ -12,9 +12,10 @@ import { IpoSubscriptionData } from './IpoSubscriptionData';
 import { PromoterHolding } from './PromoterHolding';
 import { StockPrice } from './StockPrice';
 import { Timeline } from './Timeline';
+import { EntityBase } from './base';
 
 @Entity('ipo_details', { schema: 'public' })
-export class IpoDetails {
+export class IpoDetails extends EntityBase {
   @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
   id: number;
 

@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { catchError, firstValueFrom } from 'rxjs';
-
 @Injectable()
 export class AllotmentBaseApiService {
   constructor(private readonly httpService: HttpService) {}

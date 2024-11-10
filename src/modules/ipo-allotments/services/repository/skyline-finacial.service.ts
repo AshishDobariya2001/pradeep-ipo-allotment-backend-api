@@ -1,13 +1,13 @@
 /* eslint-disable max-lines-per-function */
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { AllotmentBaseApiService } from 'src/connectors/allotment/allotment-base.api';
-import { IpoDetailsRepository } from '../repositories';
+import { IpoDetailsRepository } from '../../repositories';
 import cheerio from 'cheerio';
-import { IpoDataValidationDto, IpoDetailsDto } from '../dto';
-import { RegistrarList } from '../enum';
+import { IpoDataValidationDto, IpoDetailsDto } from '../../dto';
+import { RegistrarList } from '../../enum';
 import { Registrar } from 'src/frameworks/entities';
 import { ERROR, HttpStatusCode } from 'src/frameworks/error-code';
-import { IpoAllotmentStatus } from '../enum/ipo-allotment-status.enum';
+import { IpoAllotmentStatus } from '../../enum/ipo-allotment-status.enum';
 import { compareNameWithIpo } from 'src/frameworks/function';
 
 @Injectable()
@@ -56,6 +56,7 @@ export class SkyLineFinancialService {
     companyList.shift();
     return companyList;
   }
+
   async getUserAllotmentStatus(
     registrar?: Registrar,
     panNumber?: string,

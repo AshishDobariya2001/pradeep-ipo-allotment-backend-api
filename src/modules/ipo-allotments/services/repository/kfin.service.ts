@@ -1,25 +1,28 @@
 /* eslint-disable max-lines-per-function */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { AllotmentBaseApiService } from 'src/connectors/allotment/allotment-base.api';
-import { IpoDetailsRepository } from '../repositories';
-import { IpoDataValidationDto, IpoDetailsDto } from '../dto';
+import { IpoDetailsRepository } from '../../repositories';
+import { IpoDataValidationDto, IpoDetailsDto } from '../../dto';
 import cheerio from 'cheerio';
 import { Registrar } from 'src/frameworks/entities';
 import * as puppeteer from 'puppeteer';
-import { RegistrarList } from '../enum';
+import { RegistrarList } from '../../enum';
 import {
   SOLVE_CAPTCHA_API,
   SOLVE_CAPTCHA_API_KEY,
   SOLVE_CAPTCHA_USER_ID,
 } from 'src/frameworks/environment';
-import { IpoAllotmentStatus } from '../enum/ipo-allotment-status.enum';
+import { IpoAllotmentStatus } from '../../enum/ipo-allotment-status.enum';
 import { compareNameWithIpo } from 'src/frameworks/function';
+import { Cluster } from 'puppeteer-cluster';
+import { PuppeteerService } from '../puppeteer.service';
 
 @Injectable()
 export class KFinTechService {
   constructor(
     private ipoAllotmentApi: AllotmentBaseApiService,
     private ipoDetailsRepository: IpoDetailsRepository,
+    private puppeteerService: PuppeteerService,
   ) {}
 
   async getAllotmentStatus(ipo?: IpoDetailsDto) {
@@ -71,47 +74,61 @@ export class KFinTechService {
     pancard?: string,
     ipoAllotmentRequiredPayload?,
   ) {
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
-    const page = await browser.newPage();
+    // const browser = await puppeteer.launch({
+    //   headless: true,
+    //   args: [
+    //     '--no-sandbox',
+    //     '--disable-setuid-sandbox',
+    //     '--disable-dev-shm-usage',
+    //     '--disable-accelerated-2d-canvas',
+    //     '--disable-gpu',
+    //   ],
+    // });
+
+    // const page = await browser.newPage();
+
     try {
-      await page.goto(registrar.allotmentUrl[0]);
+      const result = await this.puppeteerService.executeTask(async (page) => {
+        await page.goto(registrar.allotmentUrl[0], { timeout: 60000 });
 
-      await page.select('select#ddl_ipo', ipoAllotmentRequiredPayload.ipo_code);
-      await page.click('input[type="radio"][value="pan"]');
-      await page.type('#txt_pan', pancard);
+        await page.select(
+          'select#ddl_ipo',
+          ipoAllotmentRequiredPayload.ipo_code,
+        );
+        await page.click('input[type="radio"][value="pan"]');
+        await page.type('#txt_pan', pancard);
 
-      const captchaImageHandle = await page.$('#captchaimg');
-      const captchaScreenshotBuffer = await captchaImageHandle.screenshot({
-        path: 'asset/captcha.png',
+        const captchaImageHandle = await page.$('#captchaimg');
+        const captchaScreenshotBuffer = await captchaImageHandle.screenshot({
+          path: 'asset/captcha.png',
+        });
+        await page.screenshot({ path: 'allotment-kFin-url-0.png' });
+
+        const result = await this.solveCaptcha(captchaScreenshotBuffer);
+        await page.type('#txt_captcha', result);
+        await page.click('#btn_submit_query');
+
+        await page.waitForNavigation({ timeout: 60000 });
+        await page.screenshot({ path: 'allotment-kFin-url-2.png' });
+
+        const htmlContent = await page.content();
+
+        const extractedInfo = await this.extractAllotmentInfo(htmlContent);
+        return {
+          allotmentStatus: extractedInfo.status,
+          name: extractedInfo.applicantName,
+          data: extractedInfo,
+          appliedStock: extractedInfo.appliedStock,
+          allotedStock: extractedInfo.allotedStock,
+        };
       });
-      await page.screenshot({ path: 'allotment-kFin-url-0.png' });
-
-      const result = await this.solveCaptcha(captchaScreenshotBuffer);
-      await page.type('#txt_captcha', result);
-      // await page.screenshot({ path: 'allotment-kFin-url-1.png' });
-      await page.click('#btn_submit_query');
-
-      await page.waitForNavigation();
-      // await page.screenshot({ path: 'allotment-kFin-url-2.png' });
-
-      const htmlContent = await page.content();
-
-      const extractedInfo = await this.extractAllotmentInfo(htmlContent);
-      return {
-        allotmentStatus: extractedInfo.status,
-        name: extractedInfo.applicantName,
-        data: extractedInfo,
-        appliedStock: extractedInfo.appliedStock,
-        allotedStock: extractedInfo.allotedStock,
-      };
     } catch (error) {
       Logger.log(`Error occurred for PAN ${pancard}:`, error, error.stack);
+      return {
+        error: 'Site took too long to respond. Please try again later.',
+      };
     } finally {
-      // await page.screenshot({ path: 'allotment-kFin-url-final.png' });
-      await browser.close();
+      // await browser.close();
     }
   }
   async extractAllotmentInfo(htmlContent): Promise<IpoDataValidationDto> {
@@ -163,7 +180,7 @@ export class KFinTechService {
       );
       return response['result'];
     } catch (error) {
-      Logger.log(error);
+      Logger.log(error, error.stack);
     }
   }
 }

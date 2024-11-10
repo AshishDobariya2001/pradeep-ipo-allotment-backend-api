@@ -13,19 +13,19 @@ import {
   IpoAllotmentContactDto,
   IpoDetailsDto,
 } from '../dto';
-import { KFinTechService } from './kfin.service';
-import { SkyLineFinancialService } from './skyline-finacial.service';
+import { KFinTechService } from './repository/kfin.service';
+import { SkyLineFinancialService } from './repository/skyline-finacial.service';
 import { ContactMapper, IpoListMapper } from '../mappers';
 import { GetContactResponseDto } from '../models';
 import { ERROR } from '../../../frameworks/error-code';
 import { Registrar } from 'src/frameworks/entities';
 import { BusinessRuleException } from 'src/frameworks/exceptions';
-import { MaashitlaSecuritiesService } from './maashitla-security.service';
-import { LinkInTimeService } from './link-in-time.service';
-import { IntegratedSecuritiesService } from './integrated-security.service';
-import { CameoIndiaService } from './cemeo-india.service';
-import { MassSecuritiesService } from './mass.service';
-import { PurvaShareService } from './purva-share.service';
+import { MaashitlaSecuritiesService } from './repository/maashitla-security.service';
+import { LinkInTimeService } from './repository/link-in-time.service';
+import { IntegratedSecuritiesService } from './repository/integrated-security.service';
+import { CameoIndiaService } from './repository/cemeo-india.service';
+import { MassSecuritiesService } from './repository/mass.service';
+import { PurvaShareService } from './repository/purva-share.service';
 
 @Injectable()
 export class IpoAllotmentService {
@@ -84,8 +84,16 @@ export class IpoAllotmentService {
   }
 
   async getIpoList(getIpoListDto: GetIpoListDto) {
-    const ipos = await this.ipoDetailsRepository.findIPOList(getIpoListDto);
-    return this.ipoListMapper.mapAll(ipos);
+    const ipoList = await this.ipoDetailsRepository.findIPOList(getIpoListDto);
+    if (!ipoList?.ipos || ipoList.ipos.length === 0) {
+      return {
+        ipos: [],
+        totalCount: 0,
+      };
+    }
+    const ipos = this.ipoListMapper.mapAll(ipoList?.ipos);
+    ipos[0]['totalCount'] = ipoList?.totalCount;
+    return ipos;
   }
 
   async addPancard(
@@ -264,6 +272,7 @@ export class IpoAllotmentService {
     userAllotment['contact'] = contact;
     return userAllotment;
   }
+
   async purvaShareIpoAllotment(
     ipo: IpoDetailsDto,
     payload?: IPOHandleRegistrarDto,

@@ -34,7 +34,9 @@ export class IpoDetailsRepository {
       select: ['id', 'name', 'serverUrl'],
     });
   }
-  async findIPOList(getIpoListDto: GetIpoListDto): Promise<IpoDetails[]> {
+  async findIPOList(
+    getIpoListDto: GetIpoListDto,
+  ): Promise<{ totalCount: number; ipos: IpoDetails[] }> {
     let queryBuilder = await this.ipoDetailsRepository
       .createQueryBuilder('ipo')
       .select(['ipo', 'timeline'])
@@ -45,18 +47,28 @@ export class IpoDetailsRepository {
       );
 
     queryBuilder = await this.filterIpoListQuery(queryBuilder, getIpoListDto);
+    const count = await queryBuilder.getCount();
 
     if (getIpoListDto.type === IpoStatusType.Upcoming) {
-      return queryBuilder
+      const ipos = await queryBuilder
         .orderBy('ipo.ipoOpenDate', 'ASC')
         .addOrderBy('ipo.listingDate', 'ASC')
         .getMany();
+      return {
+        totalCount: count,
+        ipos: ipos,
+      };
     }
-    return queryBuilder
+    const ipos = await queryBuilder
       .orderBy('ipo.listingDate', 'DESC')
       .limit(getIpoListDto.limit)
       .offset(getIpoListDto.offset)
       .getMany();
+
+    return {
+      totalCount: count,
+      ipos: ipos,
+    };
   }
 
   async filterIpoListQuery(queryBuilder, getIpoListDto: GetIpoListDto) {

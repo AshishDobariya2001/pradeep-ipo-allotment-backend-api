@@ -1,3 +1,3 @@
-export * from './bigshare.service';
+export * from './repository/bigshare.service';
 export * from './ipo-allotments.service';
-export * from './skyline-finacial.service';
+export * from './repository/skyline-finacial.service';
