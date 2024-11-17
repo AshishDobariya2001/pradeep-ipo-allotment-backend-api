@@ -5,6 +5,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { IpoGmpData } from './IpoGmpData';
 import { IpoKpi } from './IpoKpi';
 import { IpoLotSize } from './IpoLotSize';
 import { IpoReservation } from './IpoReservation';
@@ -12,10 +13,11 @@ import { IpoSubscriptionData } from './IpoSubscriptionData';
 import { PromoterHolding } from './PromoterHolding';
 import { StockPrice } from './StockPrice';
 import { Timeline } from './Timeline';
-import { EntityBase } from './base';
 
+@Index('idx_company_name', ['companyName'], {})
+@Index('ipo_details_pkey', ['id'], { unique: true })
 @Entity('ipo_details', { schema: 'public' })
-export class IpoDetails extends EntityBase {
+export class IpoDetails {
   @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
   id: number;
 
@@ -123,6 +125,23 @@ export class IpoDetails extends EntityBase {
 
   @Column('json', { name: 'ipo_allotment_required_payload', nullable: true })
   ipoAllotmentRequiredPayload: object | null;
+
+  @Column('timestamp without time zone', {
+    name: 'created_at',
+    nullable: true,
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  createdAt: Date | null;
+
+  @Column('timestamp without time zone', {
+    name: 'updated_at',
+    nullable: true,
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date | null;
+
+  // @OneToMany(() => IpoGmpData, (ipoGmpData) => ipoGmpData.ipoDetails)
+  // ipoGmpData2: IpoGmpData[];
 
   @OneToMany(() => IpoKpi, (ipoKpi) => ipoKpi.ipoDetails)
   ipoKpis: IpoKpi[];

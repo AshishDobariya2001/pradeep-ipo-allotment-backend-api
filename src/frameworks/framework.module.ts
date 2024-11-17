@@ -10,12 +10,13 @@ import { JwtStrategy } from './apis/strategy/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { UserContextRepository } from './apis/repositories/user-context.repository';
 import { ApiModule } from './apis/api.module';
+import { AccessTokens } from './entities/AccessTokens';
 
 @Module({
   imports: [
     ApiModule,
     PassportModule,
-    TypeOrmModule.forFeature([Users]),
+    TypeOrmModule.forFeature([Users, AccessTokens]),
     JwtModule.register({
       secret: JWT_ACCESS_SECRET,
       verifyOptions: {

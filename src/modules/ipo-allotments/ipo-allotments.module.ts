@@ -35,7 +35,7 @@ import { PuppeteerService } from './services/puppeteer.service';
     ]),
     AllotmentAPIsModule,
   ],
-  controllers: [AllotmentController],
+  // controllers: [AllotmentController],
   providers: [
     IpoAllotmentService,
     BigShareService,

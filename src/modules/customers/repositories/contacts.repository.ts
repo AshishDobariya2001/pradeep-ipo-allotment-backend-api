@@ -23,14 +23,14 @@ export class ContactsRepository {
     });
   }
 
-  async findUserContact(userId, contactId) {
-    return this.userContactsRepository.findOne({
-      where: {
-        userId: userId,
-        contactId: contactId,
-      },
-    });
-  }
+  // async findUserContact(userId, contactId) {
+  //   return this.userContactsRepository.findOne({
+  //     where: {
+  //       // userId: userId,
+  //       contactId: contactId,
+  //     },
+  //   });
+  // }
 
   async findByPanNumber(panNumber: string): Promise<Contacts> {
     return await this.contactRepository.findOne({

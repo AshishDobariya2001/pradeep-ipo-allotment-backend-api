@@ -5,9 +5,10 @@ import { compareHash, generateHash } from 'src/frameworks/utility/bycrypt';
 import { UserRepository } from './repositories/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { ROLES, UserPlatformType } from 'src/frameworks/enums';
-import { SignUpDto } from './dto';
+import { AccessTokenDto, SignUpDto } from './dto';
 import { BusinessRuleException } from 'src/frameworks/exceptions';
 import { ERROR } from 'src/frameworks/error-code';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
@@ -16,12 +17,28 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async getAccessToken(accessTokenDto, userAccessPlatform) {
-    //if we have phone number so that time include phone number
-    
+  async getAccessToken(
+    accessTokenDto: AccessTokenDto,
+    userAccessPlatform: UserPlatformType,
+  ) {
+    const deviceTokenId = uuidv4();
+    const token = await this.generatePayload(deviceTokenId);
+
+    const payload = {
+      id: deviceTokenId,
+      token: token,
+      deviceInfo: accessTokenDto.device,
+      devicePlatform: userAccessPlatform,
+      uuid: uuidv4(),
+    };
+
+    const accessToken = await this.userRepository.saveToken(payload);
+
     return {
-      accessToken: await this.generatePayload(),
-      data: {},
+      accessToken: token,
+      data: {
+        deviceId: accessToken.id,
+      },
     };
   }
 
@@ -47,7 +64,7 @@ export class AuthService {
     });
 
     return {
-      accessToken: await this.generatePayload(user.id, user.role),
+      // accessToken: await this.generatePayload(user.id, user.role),
       data: {
         userId: user.id,
         role: user.role,
@@ -55,8 +72,13 @@ export class AuthService {
     };
   }
 
-  async generatePayload(userId: number = 0, role: string = 'Anonymous') {
+  async generatePayload(
+    deviceTokenId: string,
+    userId: number = 0,
+    role: string = 'Anonymous',
+  ) {
     return this.jwtService.signAsync({
+      deviceId: deviceTokenId,
       role: role,
       userId: userId,
     });
@@ -79,7 +101,7 @@ export class AuthService {
     }
 
     return {
-      accessToken: await this.generatePayload(user.id, user.role),
+      // accessToken: await this.generatePayload(user.id, user.role),
       data: {
         userId: user.id,
         role: user.role,

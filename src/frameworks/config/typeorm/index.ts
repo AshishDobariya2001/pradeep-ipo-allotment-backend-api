@@ -1,11 +1,13 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import {
   AllotmentStatus,
+  AppAdSense,
   Contacts,
   IpoDetails,
   IpoKpi,
   IpoLotSize,
   IpoReservation,
+  IpoScraperLog,
   IpoSubscriptionData,
   PromoterHolding,
   Registrar,
@@ -14,36 +16,40 @@ import {
   UserContacts,
   Users,
 } from 'src/frameworks/entities';
-
+import { AccessTokens } from 'src/frameworks/entities/AccessTokens';
+import { Notifications } from 'src/frameworks/entities/Notifications';
 import { DATABASE_URL, ENVIRONMENT } from 'src/frameworks/environment';
 
 const connectConfig: TypeOrmModuleOptions = {
   type: 'postgres',
   url: DATABASE_URL,
   entities: [
+    AppAdSense,
+    AllotmentStatus,
+    AccessTokens,
+    Contacts,
     IpoDetails,
-    Timeline,
     IpoKpi,
     IpoLotSize,
     IpoReservation,
+    IpoScraperLog,
     IpoSubscriptionData,
+    Notifications,
     PromoterHolding,
-    StockPrice,
     Registrar,
+    StockPrice,
+    Timeline,
     UserContacts,
-    Contacts,
-    AllotmentStatus,
     Users,
-    UserContacts,
   ],
   logging: ENVIRONMENT === 'local',
   synchronize: false,
-  migrations: ['dist/migrations/*{.ts,.js}'],
-  migrationsTableName: 'migrations_history',
+  migrations: ['src/migrations/*.ts'],
+  migrationsTableName: 'migrations',
   migrationsRun: true,
-  // ssl: {
-  //   rejectUnauthorized: false,
-  // },
+  ssl: {
+    rejectUnauthorized: false,
+  },
 };
 
 const config = {

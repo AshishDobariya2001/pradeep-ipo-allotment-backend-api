@@ -5,21 +5,22 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-} from 'typeorm';
-import { IpoDetails } from './IpoDetails';
+} from "typeorm";
+import { IpoDetails } from "./IpoDetails";
 
-@Entity('ipo_kpi', { schema: 'public' })
+@Index("ipo_kpi_pkey", ["id"], { unique: true })
+@Entity("ipo_kpi", { schema: "public" })
 export class IpoKpi {
-  @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
+  @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;
 
-  @Column('character varying', { name: 'kpi_name', nullable: true })
+  @Column("character varying", { name: "kpi_name", nullable: true })
   kpiName: string | null;
 
-  @Column('character varying', { name: 'kpi_value', nullable: true })
+  @Column("character varying", { name: "kpi_value", nullable: true })
   kpiValue: string | null;
 
   @ManyToOne(() => IpoDetails, (ipoDetails) => ipoDetails.ipoKpis)
-  @JoinColumn([{ name: 'ipo_details_id', referencedColumnName: 'id' }])
+  @JoinColumn([{ name: "ipo_details_id", referencedColumnName: "id" }])
   ipoDetails: IpoDetails;
 }

@@ -18,19 +18,39 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(req: Request, payload): Promise<Users> {
+  async validate(req: Request, payload): Promise<Users | object> {
     const userPlatform = req.headers['x-user-platform'];
+    const userDeviceId = req.headers['x-user-device-id'];
     if (!userPlatform) {
       throw new BusinessRuleException(ERROR.INVALID_PLATFORM);
     }
-    const user = await this.usersRepository.validateUser(
-      payload['userId'],
+
+    if (userDeviceId !== payload.deviceId) {
+      throw new BusinessRuleException(ERROR.INVALIDATE_REQUEST);
+    }
+
+    const accessToken = req.headers['authorization']?.split(' ')[1];
+
+    const accessTokenPayload = await this.usersRepository.verifyAccessToken(
+      accessToken,
+      userDeviceId,
       userPlatform,
     );
 
-    if (!user) {
+    if (!accessTokenPayload) {
       throw new BusinessRuleException(ERROR.UNAUTHORIZED);
     }
-    return user;
+
+    if (payload?.userId) {
+      const user = await this.usersRepository.validateUser(
+        payload['userId'],
+        userPlatform,
+      );
+      if (!user) {
+        throw new BusinessRuleException(ERROR.UNAUTHORIZED);
+      }
+      return user;
+    }
+    return { id: payload['userId'], role: payload['role'] };
   }
 }

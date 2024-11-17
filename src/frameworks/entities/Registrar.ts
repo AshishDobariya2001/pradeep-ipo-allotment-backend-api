@@ -1,19 +1,24 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity('registrar')
+@Index("registrar_pkey", ["id"], { unique: true })
+@Entity("registrar", { schema: "public" })
 export class Registrar {
-  @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
+  @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;
 
-  @Column('text', { name: 'name' })
+  @Column("text", { name: "name" })
   name: string;
 
-  @Column('text', { name: 'server_url', nullable: true, array: true })
+  @Column("text", { name: "server_url", nullable: true, array: true })
   serverUrl: string[] | null;
 
-  @Column('text', { name: 'allotment_url', nullable: true, array: true })
-  allotmentUrl: string[];
+  @Column("text", { name: "allotment_url", nullable: true, array: true })
+  allotmentUrl: string[] | null;
 
-  @Column('boolean', { name: 'is_active', nullable: true })
-  isActive: boolean;
+  @Column("boolean", {
+    name: "is_active",
+    nullable: true,
+    default: () => "false",
+  })
+  isActive: boolean | null;
 }

@@ -14,7 +14,19 @@ export class AuthController {
 
   @ApiOperation({ summary: 'sign up using phone number and pin code' })
   @HttpCode(200)
-  @Post('accessToken')
+  // @ApiBody({
+  //   description: 'Encrypted login data',
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       payload: {
+  //         type: 'string',
+  //         example: 'U2FsdGVkX1+...encrypted-content...',
+  //       },
+  //     },
+  //   },
+  // })
+  @Post('access-token')
   async getAccessToken(
     @Body() accessTokenDto: AccessTokenDto,
     @UserAccessPlatform() userAccessPlatform: UserPlatformType,

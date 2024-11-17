@@ -202,7 +202,7 @@ export class IpoAllotmentService {
     ipoAllotmentContactDto: IpoAllotmentContactDto,
   ) {
     const userAllotment =
-      await this.ipoDetailsRepository.findIpoAllotmentByPanCardAndCompanyId(
+      await this.ipoDetailsRepository.findIpoAllotmentByPanNumberAndCompanyId(
         id,
         ipoAllotmentContactDto.panNumber,
       );
@@ -258,7 +258,7 @@ export class IpoAllotmentService {
       }
       const userAllotment = await this.ipoDetailsRepository.createAllotment({
         companyId: id,
-        contactId: contact.id,
+        contact: contact,
         pancard: ipoAllotmentContactDto.panNumber,
         companyName: company.companyName,
         data: allotment.userAllotment?.data,

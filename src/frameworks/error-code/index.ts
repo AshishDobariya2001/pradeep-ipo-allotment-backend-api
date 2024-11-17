@@ -1,4 +1,20 @@
 export const ERROR = {
+  INTERNAL_SERVER_ERROR: {
+    message: 'Internal server error',
+    code: 'INTERNAL_SERVER_ERROR',
+  },
+  UNPROCESSOR_ENTITY_ERROR: {
+    message: 'Unprocessor entity error',
+    code: 'UNPROCESSOR_ENTITY_ERROR',
+  },
+  NO_PAYLOAD_FOUND: {
+    message: 'No payload found. Please enter encrypted data.',
+    code: 'NO_PAYLOAD_FOUND',
+  },
+  INVALIDATE_REQUEST: {
+    message: 'Invalid request',
+    code: 'INVALIDATE_REQUEST',
+  },
   USER_ALREADY_EXISTS: {
     message: 'User already exists',
     code: 'USER_ALREADY_EXISTS',

@@ -24,16 +24,33 @@ export class EncryptionController {
   @ApiBody({
     schema: {
       type: 'object',
+      properties: {
+        payload: { type: 'object' },
+      },
+      required: ['payload'],
     },
   })
-  async encrypt(@Body() data) {
-    return await this.encryptionService.encrypt(data);
+  async encrypt(@Body() data: { payload: string }) {
+    return await this.encryptionService.encrypt(data.payload);
   }
 
   @Post('decrypt')
   @ApiOperation({ summary: 'Decrypt data' })
-  @ApiResponse({ status: 200, description: 'Returns decrypted data' })
-  async decrypt(@Body() data: { encryptedText: string }) {
-    return this.encryptionService.decrypt(data.encryptedText);
+  @ApiResponse({
+    status: 200,
+    description: 'Returns decrypted data',
+    type: String,
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        payload: { type: 'string' },
+      },
+      required: ['payload'],
+    },
+  })
+  async decrypt(@Body() data: { payload: string }) {
+    return this.encryptionService.decrypt(data.payload);
   }
 }

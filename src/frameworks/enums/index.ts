@@ -25,7 +25,8 @@ export enum IpoCalendarSubStatus {
 }
 
 export enum UserPlatformType {
+  ALLOTMENT_MOBILE_APPLICATION = 'ipo_allotment_mobile_application',
   ALLOTMENT = 'allotment',
   SCREENER = 'screener',
   SCREENER_WEB = 'screener-web',
-} // {{ edit_1 }}
+}

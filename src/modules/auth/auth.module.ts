@@ -10,11 +10,12 @@ import { AuthService } from './auth.service';
 import { UserRepository } from './repositories/user.repository';
 import { Users } from 'src/frameworks/entities';
 import { PassportModule } from '@nestjs/passport';
+import { AccessTokens } from 'src/frameworks/entities/AccessTokens';
 
 @Module({
   imports: [
     PassportModule,
-    TypeOrmModule.forFeature([Users]),
+    TypeOrmModule.forFeature([Users, AccessTokens]),
     JwtModule.register({
       global: true,
       secret: JWT_ACCESS_SECRET,
@@ -24,7 +25,7 @@ import { PassportModule } from '@nestjs/passport';
       signOptions: { expiresIn: `${JWT_ACCESS_EXPIRES_IN_DAYS}d` },
     }),
   ],
-  controllers: [],
+  controllers: [AuthController],
   providers: [AuthService, UserRepository],
   exports: [],
 })

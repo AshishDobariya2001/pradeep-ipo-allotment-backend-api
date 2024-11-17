@@ -12,6 +12,8 @@ export class IpoAllotmentContactDto {
   @IsOptional()
   @IsString()
   @Transform(({ value }) => value.toUpperCase())
-  @Matches(/[A-Z]{5}[0-9]{4}[A-Z]{1}/)
+  @Matches(/[A-Z]{5}[0-9]{4}[A-Z]{1}/, {
+    message: 'PanNumber is not valid',
+  })
   panNumber: string;
 }

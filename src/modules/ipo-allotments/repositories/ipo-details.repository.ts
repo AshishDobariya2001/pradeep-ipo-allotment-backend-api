@@ -213,6 +213,7 @@ export class IpoDetailsRepository {
       },
     });
   }
+
   async createContact(payload: Partial<Contacts>) {
     return this.contactRepository.save(payload);
   }
@@ -220,7 +221,8 @@ export class IpoDetailsRepository {
   async updateContact(id, payload: Partial<Contacts>) {
     return this.contactRepository.update(id, payload);
   }
-  async findIpoAllotmentByPanCardAndCompanyId(
+
+  async findIpoAllotmentByPanNumberAndCompanyId(
     companyId: string,
     panCard: string,
   ) {

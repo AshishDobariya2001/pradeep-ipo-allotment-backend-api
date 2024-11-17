@@ -1,30 +1,26 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import * as CryptoJS from 'crypto-js';
-import { UserPlatformType } from '../enums';
 import { ENCRYPTION_SECRET_KEY } from '../environment';
+import { ERROR } from '../error-code';
 
 @Injectable()
 export class DecryptMiddleware implements NestMiddleware {
-  // private readonly secretKey = 'your-secret-key';
-
   use(req: Request, res: Response, next: NextFunction) {
-    console.log('inside decryptions headers', req.headers['x-user-platform']);
-    if (
-      req.body &&
-      req.body.payload &&
-      req.headers['x-user-platform'] === UserPlatformType.SCREENER_WEB
-    ) {
+    if (req.body && req.method !== 'GET') {
       try {
-        console.log('req.body', req.body.payload);
+        if (!req.body.payload) {
+          return res.status(402).send(ERROR.NO_PAYLOAD_FOUND);
+        }
+        Logger.log('req.body', req.body.payload);
         const bytes = CryptoJS.AES.decrypt(
           req.body.payload,
           ENCRYPTION_SECRET_KEY,
         );
         const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+        // Logger.log('decryptedData:', decryptedData);
 
         req.body = decryptedData;
-        console.log(req.body);
         next();
       } catch (error) {
         console.error('Decryption failed:', error);

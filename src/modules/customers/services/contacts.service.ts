@@ -14,34 +14,34 @@ export class ContactsService {
       createContactDto.panNumber,
     );
 
-    const userContact = existingContact
-      ? await this.contactRepository.findUserContact(
-          user?.id,
-          existingContact.id,
-        )
-      : null;
+    // const userContact = existingContact
+    //   ? await this.contactRepository.findUserContact(
+    //       user?.id,
+    //       existingContact.id,
+    //     )
+    //   : null;
 
-    if (userContact) {
-      if (userContact.deletedAt !== null) {
-        await this.contactRepository.updateUserContact(userContact.id, {
-          deletedAt: null,
-          updatedAt: new Date(),
-        });
-      }
-      console.log('inside update contact ', existingContact);
-      await this.contactRepository.updateContact(existingContact.id, {
-        name: createContactDto.name || existingContact.name,
-        email: createContactDto.email || existingContact.email,
-        phone: createContactDto.phoneNumber || existingContact.phone,
-      });
-      return;
-    } else if (existingContact) {
-      await this.contactRepository.addUserContact({
-        contactId: existingContact.id,
-        userId: user?.id,
-      });
-      return;
-    }
+    // if (userContact) {
+    //   if (userContact.deletedAt !== null) {
+    //     await this.contactRepository.updateUserContact(userContact.id, {
+    //       deletedAt: null,
+    //       updatedAt: new Date(),
+    //     });
+    //   }
+    //   console.log('inside update contact ', existingContact);
+    //   await this.contactRepository.updateContact(existingContact.id, {
+    //     name: createContactDto.name || existingContact.name,
+    //     email: createContactDto.email || existingContact.email,
+    //     phone: createContactDto.phoneNumber || existingContact.phone,
+    //   });
+    //   return;
+    // } else if (existingContact) {
+    //   // await this.contactRepository.addUserContact({
+    //   //   contactId: existingContact.id,
+    //   //   userId: user?.id,
+    //   // });
+    //   return;
+    // }
 
     const contact = await this.contactRepository.addContact({
       phone: createContactDto.phoneNumber,
@@ -50,10 +50,10 @@ export class ContactsService {
       panNumber: createContactDto.panNumber,
     });
 
-    await this.contactRepository.addUserContact({
-      contactId: contact.id,
-      userId: user?.id,
-    });
+    // await this.contactRepository.addUserContact({
+    //   contactId: contact.id,
+    //   userId: user?.id,
+    // });
   }
   findAll(user: Users) {
     return this.contactRepository.findAll(user.id);

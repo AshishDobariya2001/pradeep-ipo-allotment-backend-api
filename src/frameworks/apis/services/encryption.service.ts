@@ -10,23 +10,33 @@ export class EncryptionService {
 
   async encrypt(data?) {
     Logger.log('data: ', data);
-    data = {
-      countryCode: '+91',
-      phoneNumber: '7285860835',
-      pin: '123456',
-    };
+    // data = {
+    //   countryCode: '+91',
+    //   phoneNumber: '7285860835',
+    //   pin: '123456',
+    // };
     const encryptedData = CryptoJS.AES.encrypt(
       JSON.stringify(data),
       ENCRYPTION_SECRET_KEY,
     ).toString();
 
     console.log('encryptedData: ', encryptedData);
-    return encryptedData;
+    return {
+      success: true,
+      data: encryptedData,
+    };
   }
 
   async decrypt(encryptedText: string) {
-    return CryptoJS.AES.decrypt(encryptedText, ENCRYPTION_SECRET_KEY).toString(
-      CryptoJS.enc.Utf8,
+    const bytes = await CryptoJS.AES.decrypt(
+      encryptedText,
+      ENCRYPTION_SECRET_KEY,
     );
+    const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    console.log('decryptedData:', decryptedData);
+    return {
+      success: true,
+      data: JSON.parse(decryptedData),
+    };
   }
 }

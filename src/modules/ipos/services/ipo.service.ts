@@ -1,16 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { IPODetailsRepository } from '../repositories/ipo-details.repository';
 import { IpoStatusType, IpoType } from '../../ipo-allotments/enum';
 import { FetchIpoListRequestDto, IpoCalendarList } from '../dtos';
 import { IpoCalendarStatus, IpoCalendarSubStatus } from 'src/frameworks/enums';
 import * as moment from 'moment-timezone';
 import { FetchIpoMapper } from '../mappers/fetch-ipo-list.mapper';
+import { IpoAllotmentContactDto } from 'src/modules/ipo-allotments/dto';
+import { IpoAllotmentService } from 'src/modules/ipo-allotments/services';
+import { error } from 'console';
+import { ERROR } from 'src/frameworks/error-code';
+import { BusinessRuleException } from 'src/frameworks/exceptions';
+import { FetchAllotmentStatusMapper } from '../mappers/fetch-allotment-status.mapper';
 
 @Injectable()
 export class IPOService {
   constructor(
     private ipoDetailsRepository: IPODetailsRepository,
     private fetchIpoListMapper: FetchIpoMapper,
+    private ipoAllotmentService: IpoAllotmentService,
+    private fetchAllotmentStatusMapper: FetchAllotmentStatusMapper,
   ) {}
 
   async stats() {
@@ -152,5 +160,97 @@ export class IPOService {
     const ipo = await this.ipoDetailsRepository.findById(id);
     const mappedIpo = await this.fetchIpoListMapper.mapOne(ipo);
     return mappedIpo;
+  }
+
+  async getAllotmentByCompanyId(
+    companyId: string,
+    ipoAllotmentContactDto: IpoAllotmentContactDto,
+  ) {
+    const userAllotment =
+      await this.ipoAllotmentService.allotmentByPanCardStatus(
+        companyId,
+        ipoAllotmentContactDto,
+      );
+
+    return await this.fetchAllotmentStatusMapper.mapOne(userAllotment);
+  }
+
+  async getAllotmentByPanNumber(
+    companyId: string,
+    ipoAllotmentContactDto: IpoAllotmentContactDto,
+  ) {
+    try {
+      const userAllotment =
+        await this.ipoDetailsRepository.findIpoAllotmentByPanCardAndCompanyId(
+          companyId,
+          ipoAllotmentContactDto.panNumber,
+        );
+
+      const contact = await this.ipoDetailsRepository.findContactByPanNumber(
+        ipoAllotmentContactDto.panNumber,
+      );
+
+      if (!userAllotment) {
+        const { allotment, company } = await this.checkAllotmentByPanNumber(
+          companyId,
+          ipoAllotmentContactDto.panNumber,
+        );
+
+        // if (!contact && allotment.userAllotment.name)
+        // contact = await this.ipoDetailsRepository.upsertContact({
+        //   panNumber: ipoAllotmentContactDto.panNumber,
+        //   name: allotment.userAllotment.name
+        //     ? allotment.userAllotment.name
+        //     : null,
+        //   legalName: allotment.userAllotment.name
+        //     ? allotment.userAllotment.name
+        //     : null,
+        // });
+
+        // const addAllotment = await this.ipoDetailsRepository.createAllotment({
+        //   companyId: companyId,
+        //   contactId: contact.id,
+        //   pancard: ipoAllotmentContactDto.panNumber,
+        //   companyName: company.companyName,
+        //   data: allotment.userAllotment?.data,
+        //   allotmentStatus: allotment.userAllotment.allotmentStatus,
+        //   appliedStock: allotment.userAllotment?.appliedStock,
+        //   allotedStock: allotment.userAllotment?.allotedStock,
+        // });
+        // Object.assign(addAllotment, contact);
+      }
+      userAllotment['contact'] = contact;
+      return userAllotment;
+    } catch (e) {
+      Logger.error('ERROR: ', e);
+      throw new BusinessRuleException(ERROR.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async checkAllotmentByPanNumber(id, panNumber: string) {
+    const company = await this.ipoDetailsRepository.findOne(id);
+    const registrar = await this.ipoDetailsRepository.findIpoRegistrarByName(
+      company.ipoRegistrar['register_name'],
+    );
+
+    const allotment = await this.ipoAllotmentService.handleRegistrar(
+      {
+        id: company.id,
+        companyName: company.companyName,
+        ipoRegistrar: company.ipoRegistrar,
+        ipoAllotmentRequiredPayload: company.ipoAllotmentRequiredPayload,
+      },
+      {
+        checkUserAllotmentStatus: true,
+        panNumber: panNumber,
+        registrar: registrar,
+        checkCompanyStatus: company.ipoAllotmentRequiredPayload ? false : true,
+      },
+    );
+
+    return {
+      allotment,
+      company,
+    };
   }
 }

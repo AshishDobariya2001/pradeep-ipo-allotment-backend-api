@@ -1,4 +1,4 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import * as CryptoJS from 'crypto-js';
 import { Response as ExpressResponse } from 'express';
@@ -13,17 +13,10 @@ export class EncryptMiddleware implements NestMiddleware {
     const originalSend = expressRes.send.bind(expressRes);
 
     expressRes.send = (data: any) => {
-      if (
-        res.locals.isEncrypted ||
-        expressRes.statusCode >= 400 ||
-        req.headers['x-user-platform'] !== UserPlatformType.SCREENER_WEB
-      ) {
-        // console.log('inside encryption', req.headers['x-user-platform'], data);
+      if (res.locals.isEncrypted || expressRes.statusCode >= 400) {
         return originalSend(data);
       }
       try {
-        // console.log('data before encryption:', data);
-
         const encryptedData = CryptoJS.AES.encrypt(
           JSON.stringify(data),
           ENCRYPTION_SECRET_KEY,
@@ -35,7 +28,7 @@ export class EncryptMiddleware implements NestMiddleware {
           data: encryptedData,
         });
       } catch (error) {
-        console.error('Encryption failed:', error);
+        Logger.error('Encryption failed:', error);
         return originalSend(data);
       }
     };

@@ -19,6 +19,7 @@ RUN apk update && apk add --no-cache \
     ttf-freefont \
     fontconfig
 
+COPY . .
 # Build the application
 RUN npm run build
 

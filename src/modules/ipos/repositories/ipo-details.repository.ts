@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IpoDetails, Users } from 'src/frameworks/entities';
+import {
+  AllotmentStatus,
+  Contacts,
+  IpoDetails,
+  Registrar,
+  Users,
+} from 'src/frameworks/entities';
 // import { GetIpoListDto } from 'src/modules/ipo-allotments/dto';
 import {
   IpoCategoryType,
@@ -16,6 +22,14 @@ export class IPODetailsRepository {
   constructor(
     @InjectRepository(IpoDetails)
     private ipoDetailsRepository: Repository<IpoDetails>,
+
+    @InjectRepository(AllotmentStatus)
+    private ipoAllotmentsRepository: Repository<AllotmentStatus>,
+    @InjectRepository(Contacts)
+    private contactRepository: Repository<Contacts>,
+
+    @InjectRepository(Registrar)
+    private ipoRegistrarRepository: Repository<Registrar>,
   ) {}
 
   async save(payload: Partial<Users>) {
@@ -262,5 +276,40 @@ export class IPODetailsRepository {
         'stockPrices',
       ],
     });
+  }
+
+  async findIpoAllotmentByPanCardAndCompanyId(
+    companyId: string,
+    panCard: string,
+  ) {
+    return this.ipoAllotmentsRepository.findOne({
+      where: {
+        companyId: companyId,
+        pancard: panCard,
+      },
+    });
+  }
+
+  async findContactByPanNumber(panNumber: string) {
+    return this.contactRepository.findOne({
+      where: {
+        panNumber: panNumber,
+      },
+    });
+  }
+  async findIpoRegistrarByName(registrarName: string): Promise<Registrar> {
+    return this.ipoRegistrarRepository.findOne({
+      where: {
+        name: registrarName,
+      },
+    });
+  }
+
+  async upsertContact(contact: Partial<Contacts>) {
+    return this.contactRepository.upsert(contact, ['panNumber']);
+  }
+
+  async createAllotment(payload: Partial<AllotmentStatus>) {
+    return this.ipoAllotmentsRepository.save(payload);
   }
 }
