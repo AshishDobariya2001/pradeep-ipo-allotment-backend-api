@@ -4,10 +4,11 @@ import {
   Post,
   Body,
   Param,
-  Delete,
   UseGuards,
+  Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { CreateContactDto } from '../dtos';
+import { CreateContactDto, GetContactByPanNumbersDto } from '../dtos';
 import { ContactsService } from '../services/contacts.service';
 import {
   ApiBearerAuth,
@@ -15,13 +16,16 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Users } from 'src/frameworks/entities';
 import { User } from 'src/frameworks/decorators/user.decorator';
 import { JwtAuthGuard } from 'src/frameworks/apis/guards/jwt-auth.guard';
+import { Users } from 'src/frameworks/entities';
+import { RolesGuard } from 'src/frameworks/apis/guards/role.guard';
+import { Roles } from 'src/frameworks/decorators/roles.decorator';
+import { ROLES } from 'src/frameworks/enums';
 
 @ApiTags('users-contacts')
 @ApiBearerAuth()
-@Controller({ version: '1', path: 'user/contacts' })
+@Controller({ version: '1', path: 'user/contact' })
 export class ContactsController {
   constructor(private contactsService: ContactsService) {}
 
@@ -31,43 +35,43 @@ export class ContactsController {
     description: 'Contact created successfully',
     type: CreateContactDto,
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(ROLES.CUSTOMER)
   @Post()
   addContact(@Body() createContactDto: CreateContactDto, @User() user: Users) {
     return this.contactsService.addContact(createContactDto, user);
   }
 
-  @ApiOperation({ summary: 'Find all contacts' })
+  @ApiOperation({ summary: 'Find all user contacts' })
   @ApiResponse({ status: 200, description: 'List of contacts', isArray: true })
   @Get()
-  @UseGuards(JwtAuthGuard)
-  findAll(@User() user: Users) {
-    return this.contactsService.findAll(user);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(ROLES.CUSTOMER)
+  findAll(@User() loggedInUser: Users) {
+    return this.contactsService.findAll(loggedInUser);
   }
 
-  @ApiOperation({ summary: 'Find a contact by ID' })
+  @ApiOperation({ summary: 'Find a contact by panNumbers' })
   @ApiResponse({
     status: 200,
     description: 'Contact found',
     type: CreateContactDto,
   })
-  @Get(':id')
+  @Post('/pan')
   @UseGuards(JwtAuthGuard)
-  findOne(@Param('id') id: string) {
-    return this.contactsService.findOne(+id);
+  findContactByPanNumber(@Body() body: GetContactByPanNumbersDto) {
+    return this.contactsService.findContactByPanNumber(body);
   }
 
-  //   @ApiOperation({ summary: 'Update a contact' })
-  //   @ApiResponse({ status: 200, description: 'Contact updated successfully', type: CreateContactDto })
-  //   @Put(':id')
-  //   update(@Param('id') id: string, @Body() updateContactDto: UpdateContactDto) {
-  //     return this.contactsService.update(+id, updateContactDto);
-  //   }
-
-  // @ApiOperation({ summary: 'Remove a contact' })
-  // @ApiResponse({ status: 200, description: 'Contact removed successfully' })
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.contactsService.remove(+id);
-  // }
+  @ApiOperation({ summary: 'Remove a contact' })
+  @ApiResponse({ status: 200, description: 'Contact removed successfully' })
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(ROLES.CUSTOMER)
+  remove(
+    @Param('id', ParseIntPipe) contactId: number,
+    @User() loggedInUser: Users,
+  ) {
+    return this.contactsService.remove(+contactId, loggedInUser);
+  }
 }

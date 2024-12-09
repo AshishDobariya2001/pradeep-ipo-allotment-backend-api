@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS public.contacts (
     name VARCHAR(255),
     phone VARCHAR(20),
     email VARCHAR(255),
+    country_code VARCHAR(5),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT contacts_pkey PRIMARY KEY (id)

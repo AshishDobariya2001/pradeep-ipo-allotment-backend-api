@@ -13,9 +13,9 @@ import {
   Registrar,
   StockPrice,
   Timeline,
-  UserContacts,
   Users,
 } from 'src/frameworks/entities';
+
 import { AccessTokens } from 'src/frameworks/entities/AccessTokens';
 import { Notifications } from 'src/frameworks/entities/Notifications';
 import { DATABASE_URL, ENVIRONMENT } from 'src/frameworks/environment';
@@ -39,10 +39,9 @@ const connectConfig: TypeOrmModuleOptions = {
     Registrar,
     StockPrice,
     Timeline,
-    UserContacts,
     Users,
   ],
-  logging: ENVIRONMENT === 'local',
+  // logging: ENVIRONMENT === 'local',
   synchronize: false,
   migrations: ['src/migrations/*.ts'],
   migrationsTableName: 'migrations',

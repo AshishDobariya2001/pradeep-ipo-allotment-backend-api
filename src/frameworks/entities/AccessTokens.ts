@@ -1,5 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
-import { Users } from './Users';
+import { Column, Entity, Index } from 'typeorm';
 
 @Index('access_tokens_pkey', ['id'], { unique: true })
 @Entity('access_tokens', { schema: 'public' })
@@ -14,6 +13,9 @@ export class AccessTokens {
   @Column('text', { name: 'token' })
   token: string;
 
+  @Column('bigint', { name: 'user_id', nullable: true })
+  userId: string | null;
+
   @Column('jsonb', { name: 'device_info', nullable: true })
   deviceInfo: object | null;
 
@@ -23,6 +25,9 @@ export class AccessTokens {
     default: () => '0',
   })
   requestCount: number | null;
+
+  @Column('text', { name: 'device_platform' })
+  devicePlatform: string;
 
   @Column('timestamp with time zone', {
     name: 'created_at',
@@ -37,11 +42,4 @@ export class AccessTokens {
     default: () => 'now()',
   })
   updatedAt: Date | null;
-
-  @Column('text', { name: 'device_platform' })
-  devicePlatform: string;
-
-  @ManyToOne(() => Users, (users) => users.accessTokens)
-  @JoinColumn([{ name: 'user_id', referencedColumnName: 'id' }])
-  user: Users;
 }

@@ -1,7 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, MinLength, MaxLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
-export class LoginDto {
+export class VerifyOtpDto {
   @ApiProperty({ description: 'Country code', example: '+91' })
   @IsString()
   @IsNotEmpty()
@@ -9,7 +15,7 @@ export class LoginDto {
 
   @ApiProperty({
     description: 'User mobile number',
-    example: '7285868035',
+    example: '728586835',
     type: String,
   })
   @IsString()
@@ -18,20 +24,19 @@ export class LoginDto {
   @MaxLength(10)
   phoneNumber: string;
 
-  @ApiProperty({
-    description: 'User PIN',
-    example: '123456',
-    type: String,
-  })
+  @ApiProperty({ description: 'OTP', example: '123456' })
   @IsString()
+  @IsNotEmpty()
   @MinLength(6)
   @MaxLength(6)
-  pin: string;
+  tempOtp: string;
 
   @ApiProperty({
     description: 'Device information',
     type: 'object',
     example: { deviceId: '123', deviceType: 'mobile' },
   })
+  @ApiPropertyOptional()
+  @IsOptional()
   device: object;
 }

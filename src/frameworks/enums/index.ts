@@ -2,8 +2,8 @@ export enum ROLES {
   CUSTOMER = 'customer',
 
   ADMIN = 'admin',
+  ANONYMOUS = 'anonymous',
 }
-// Define your roles here
 
 export enum IpoCalendarStatus {
   Open = 'open',
@@ -29,4 +29,12 @@ export enum UserPlatformType {
   ALLOTMENT = 'allotment',
   SCREENER = 'screener',
   SCREENER_WEB = 'screener-web',
+}
+
+export enum DefaultStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  PENDING = 'pending',
+  BLOCKED = 'blocked',
+  INVITED = 'invited',
 }

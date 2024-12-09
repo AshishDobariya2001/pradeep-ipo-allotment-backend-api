@@ -36,9 +36,6 @@ export class UserContextRepository {
     deviceId: string,
     userPlatform: UserPlatformType,
   ) {
-    console.log("🚀 ~ UserContextRepository ~ userPlatform:", userPlatform)
-    console.log("🚀 ~ UserContextRepository ~ deviceId:", deviceId)
-    console.log("🚀 ~ UserContextRepository ~ accessToken:", accessToken)
     const isAccessTokenValid = await this.accessTokensRepository.findOne({
       where: {
         token: accessToken,

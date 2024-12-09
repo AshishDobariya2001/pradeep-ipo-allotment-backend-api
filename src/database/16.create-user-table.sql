@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS public.users (
     phone VARCHAR(20),
     email TEXT,
     legal_name TEXT,
-    pancard VARCHAR(20),
+    pan_number VARCHAR(20),
     pin TEXT,
     reset_pin_code_link TEXT,
     role TEXT,

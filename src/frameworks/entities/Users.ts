@@ -2,93 +2,114 @@ import {
   Column,
   Entity,
   Index,
-  OneToMany,
+  ManyToMany,
   PrimaryGeneratedColumn,
-} from "typeorm";
-import { AccessTokens } from "./AccessTokens";
-import { UserContacts } from "./UserContacts";
+} from 'typeorm';
+import { Contacts } from './Contacts';
 
-@Index("users_pkey", ["id"], { unique: true })
-@Entity("users", { schema: "public" })
+@Index('users_pkey', ['id'], { unique: true })
+@Entity('users', { schema: 'public' })
 export class Users {
-  @PrimaryGeneratedColumn({ type: "integer", name: "id" })
+  @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
   id: number;
 
-  @Column("text", { name: "name", nullable: true })
+  @Column('text', { name: 'name', nullable: true })
   name: string | null;
 
-  @Column("character varying", { name: "phone", nullable: true, length: 20 })
+  @Column('character varying', { name: 'phone', nullable: true, length: 20 })
   phone: string | null;
 
-  @Column("text", { name: "email", nullable: true })
+  @Column('text', { name: 'email', nullable: true })
   email: string | null;
 
-  @Column("text", { name: "legal_name", nullable: true })
+  @Column('text', { name: 'legal_name', nullable: true })
   legalName: string | null;
 
-  @Column("character varying", { name: "pancard", nullable: true, length: 20 })
-  pancard: string | null;
+  @Column('character varying', {
+    name: 'pan_number',
+    nullable: true,
+    length: 20,
+  })
+  panNumber: string | null;
 
-  @Column("text", { name: "pin", nullable: true })
+  @Column('text', { name: 'pin', nullable: true })
   pin: string | null;
 
-  @Column("text", { name: "reset_pin_code_link", nullable: true })
+  @Column('text', { name: 'reset_pin_code_link', nullable: true })
   resetPinCodeLink: string | null;
 
-  @Column("text", { name: "role", nullable: true })
+  @Column('text', { name: 'role', nullable: true })
   role: string | null;
 
-  @Column("text", { name: "sub_role", nullable: true })
+  @Column('text', { name: 'sub_role', nullable: true })
   subRole: string | null;
 
-  @Column("boolean", {
-    name: "is_ipo_screener_access",
+  @Column('boolean', {
+    name: 'is_ipo_screener_access',
     nullable: true,
-    default: () => "false",
+    default: () => 'false',
   })
   isIpoScreenerAccess: boolean | null;
 
-  @Column("boolean", {
-    name: "is_ipo_allotment_access",
+  @Column('boolean', {
+    name: 'is_ipo_allotment_access',
     nullable: true,
-    default: () => "false",
+    default: () => 'false',
   })
   isIpoAllotmentAccess: boolean | null;
 
-  @Column("boolean", {
-    name: "is_ipo_screener_web_access",
+  @Column('boolean', {
+    name: 'is_ipo_screener_web_access',
     nullable: true,
-    default: () => "false",
+    default: () => 'false',
   })
   isIpoScreenerWebAccess: boolean | null;
 
-  @Column("character varying", {
-    name: "country_code",
+  @Column('character varying', {
+    name: 'country_code',
     nullable: true,
     length: 10,
   })
   countryCode: string | null;
 
-  @Column("timestamp without time zone", {
-    name: "created_at",
+  @Column('timestamp without time zone', {
+    name: 'created_at',
     nullable: true,
-    default: () => "CURRENT_TIMESTAMP",
+    default: () => 'CURRENT_TIMESTAMP',
   })
   createdAt: Date | null;
 
-  @Column("timestamp without time zone", {
-    name: "updated_at",
+  @Column('timestamp without time zone', {
+    name: 'updated_at',
     nullable: true,
-    default: () => "CURRENT_TIMESTAMP",
+    default: () => 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date | null;
 
-  @OneToMany(() => AccessTokens, (accessTokens) => accessTokens.user)
-  accessTokens: AccessTokens[];
+  @Column('text', { name: 'temp_otp', nullable: true })
+  tempOtp: string | null;
 
-  @OneToMany(() => UserContacts, (userContacts) => userContacts.user)
-  userContacts: UserContacts[];
+  @Column('timestamp without time zone', {
+    name: 'temp_otp_expire_time',
+    nullable: true,
+  })
+  tempOtpExpireTime: Date | null;
 
-  @OneToMany(() => UserContacts, (userContacts) => userContacts.user_2)
-  userContacts2: UserContacts[];
+  @Column('boolean', {
+    name: 'is_mobile_verified',
+    nullable: true,
+    default: () => 'false',
+  })
+  isMobileVerified: boolean | null;
+
+  @Column('character varying', {
+    name: 'status',
+    nullable: true,
+    length: 20,
+    default: () => "'pending'",
+  })
+  status: string | null;
+
+  @ManyToMany(() => Contacts, (contacts) => contacts.users)
+  contacts: Contacts[];
 }

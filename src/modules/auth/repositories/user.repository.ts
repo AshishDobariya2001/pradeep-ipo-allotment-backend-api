@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Users } from 'src/frameworks/entities';
-import { AccessTokens } from 'src/frameworks/entities/AccessTokens';
-import { Repository } from 'typeorm';
+import { AccessTokens, Users } from 'src/frameworks/entities';
+import { DefaultStatus } from 'src/frameworks/enums';
+import { In, Not, Repository } from 'typeorm';
 
 @Injectable()
 export class UserRepository {
@@ -17,15 +17,21 @@ export class UserRepository {
     return this.usersRepository.save(payload);
   }
 
-  async findOneByPhone(countryCode, phoneNumber) {
+  async findOneByPhone(countryCode, phoneNumber): Promise<Users> {
     return this.usersRepository.findOne({
       where: {
         countryCode: countryCode,
         phone: phoneNumber,
+        status: Not(In([DefaultStatus.BLOCKED])),
       },
     });
   }
+
   async saveToken(accessToken: Partial<AccessTokens>) {
     return this.accessTokensRepository.save(accessToken);
+  }
+
+  async update(id, payload: Partial<Users>) {
+    return this.usersRepository.update(id, payload);
   }
 }

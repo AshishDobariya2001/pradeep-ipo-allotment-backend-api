@@ -23,6 +23,18 @@ export const ERROR = {
     message: 'User not found',
     code: 'USER_NOT_FOUND',
   },
+  USER_NOT_FOUND_TRY_AGAIN: {
+    message: 'User not found, please login again',
+    code: 'USER_NOT_FOUND',
+  },
+  INVALID_OTP: {
+    message: 'The OTP you entered is invalid. Please try again.',
+    code: 'INVALID_OTP',
+  },
+  USER_IS_NOT_VERIFIED: {
+    message: 'User is not verified. Please verify your account.',
+    code: 'USER_IS_NOT_VERIFIED',
+  },
   UNAUTHORIZED: {
     message: 'Unauthorized access',
     code: 'UNAUTHORIZED',
@@ -52,7 +64,7 @@ export const ERROR = {
     code: 'WE_DID_NOT_HAVE_THIS_REGISTRAR',
   },
   INVALID_PIN: {
-    message: 'Invalid pin',
+    message: 'Invalid pin. please reset your pin.',
     code: 'INVALID_PIN',
   },
   CONTACT_IS_NOT_FOUND: {

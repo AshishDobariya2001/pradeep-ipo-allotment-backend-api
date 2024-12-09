@@ -9,12 +9,12 @@ import { AuthModule } from './modules/auth/auth.module';
 import { IPOModule } from './modules/ipos/ipo.module';
 import { APP_FILTER } from '@nestjs/core';
 import { CustomExceptionsFilter } from './frameworks/utility/filter';
-// import { CustomerModule } from './modules/customers/customer.module';
 import { frameworksModule } from './frameworks/framework.module';
 import { DecryptMiddleware } from './frameworks/middleware/decrypt.middleware';
 import { EncryptMiddleware } from './frameworks/middleware/encrypt.middleware';
 import { AuthController } from './modules/auth/auth.controller';
 import { IPOController } from './modules/ipos/controllers/ipo.controller';
+import { CustomerModule } from './modules/customers/customer.module';
 
 @Module({
   imports: [
@@ -25,8 +25,8 @@ import { IPOController } from './modules/ipos/controllers/ipo.controller';
     // ScrapersModule,
     AuthModule,
     IPOModule,
-    // CustomerModule,
     frameworksModule,
+    CustomerModule,
   ],
   controllers: [],
   providers: [
@@ -37,9 +37,9 @@ import { IPOController } from './modules/ipos/controllers/ipo.controller';
   ],
 })
 export class AppModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(DecryptMiddleware, EncryptMiddleware)
-      .forRoutes(AuthController, IPOController);
-  }
+  // configure(consumer: MiddlewareConsumer) {
+  //   consumer
+  //     .apply(DecryptMiddleware, EncryptMiddleware)
+  //     .forRoutes(AuthController, IPOController);
+  // }
 }

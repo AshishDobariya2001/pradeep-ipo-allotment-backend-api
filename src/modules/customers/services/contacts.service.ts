@@ -1,65 +1,97 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { CreateContactDto } from '../dtos';
+import { CreateContactDto, GetContactByPanNumbersDto } from '../dtos';
 import { ContactsRepository } from '../repositories/contacts.repository';
-import { Users } from 'src/frameworks/entities';
+import { Contacts, Users } from 'src/frameworks/entities';
+import { BusinessRuleException } from 'src/frameworks/exceptions';
+import { ERROR } from 'src/frameworks/error-code';
 
 @Injectable()
 export class ContactsService {
   constructor(private contactRepository: ContactsRepository) {}
 
-  async addContact(createContactDto: CreateContactDto, user: Users) {
-    const existingContact = await this.contactRepository.findByPanNumber(
+  getUser(loggedInUser: Users) {
+    if (!loggedInUser?.id) {
+      throw new BusinessRuleException(ERROR.USER_NOT_FOUND);
+    }
+    return this.contactRepository.findUserByUserId(loggedInUser.id);
+  }
+
+  async addContact(createContactDto: CreateContactDto, loggedInUser: Users) {
+    if (!loggedInUser?.id) {
+      throw new BusinessRuleException(ERROR.USER_NOT_FOUND);
+    }
+    const existingContact = await this.contactRepository.findContactByPanNumber(
       createContactDto.panNumber,
     );
 
-    // const userContact = existingContact
-    //   ? await this.contactRepository.findUserContact(
-    //       user?.id,
-    //       existingContact.id,
-    //     )
-    //   : null;
+    let contact: Contacts;
 
-    // if (userContact) {
-    //   if (userContact.deletedAt !== null) {
-    //     await this.contactRepository.updateUserContact(userContact.id, {
-    //       deletedAt: null,
-    //       updatedAt: new Date(),
-    //     });
-    //   }
-    //   console.log('inside update contact ', existingContact);
-    //   await this.contactRepository.updateContact(existingContact.id, {
-    //     name: createContactDto.name || existingContact.name,
-    //     email: createContactDto.email || existingContact.email,
-    //     phone: createContactDto.phoneNumber || existingContact.phone,
-    //   });
-    //   return;
-    // } else if (existingContact) {
-    //   // await this.contactRepository.addUserContact({
-    //   //   contactId: existingContact.id,
-    //   //   userId: user?.id,
-    //   // });
-    //   return;
-    // }
+    if (existingContact) {
+      const hasRelationship = existingContact.users.some(
+        (u) => u.id === loggedInUser.id,
+      );
 
-    const contact = await this.contactRepository.addContact({
-      phone: createContactDto.phoneNumber,
-      email: createContactDto.email,
-      name: createContactDto.name,
-      panNumber: createContactDto.panNumber,
-    });
+      if (hasRelationship) {
+        await this.contactRepository.updateContact(
+          existingContact.id,
+          createContactDto,
+        );
+        contact = existingContact;
+      } else {
+        existingContact.users.push(loggedInUser);
+        await this.contactRepository.addContact(existingContact);
+        contact = existingContact;
+      }
+    } else {
+      contact = await this.contactRepository.contactCreate({
+        ...createContactDto,
+        users: [loggedInUser],
+      });
+      await this.contactRepository.addContact(contact);
+    }
 
-    // await this.contactRepository.addUserContact({
-    //   contactId: contact.id,
-    //   userId: user?.id,
-    // });
-  }
-  findAll(user: Users) {
-    return this.contactRepository.findAll(user.id);
+    return {
+      success: true,
+      message: 'Contact added successfully',
+      data: {
+        id: contact.id,
+        panNumber: contact.panNumber,
+      },
+    };
   }
 
-  findOne(id: number) {
-    return this.contactRepository.findOne(id);
+  findAll(loggedInUser: Users) {
+    if (!loggedInUser?.id) {
+      throw new BusinessRuleException(ERROR.USER_NOT_FOUND);
+    }
+    return this.contactRepository.findUserWithContact(loggedInUser.id);
+  }
+
+  async findContactByPanNumber(body: GetContactByPanNumbersDto) {
+    return this.contactRepository.findContactByPanNumbers(body.panNumbers);
+  }
+
+  async remove(contactId: number, loggedInUser: Users) {
+    if (!loggedInUser?.id) {
+      throw new BusinessRuleException(ERROR.USER_NOT_FOUND);
+    }
+    const contact =
+      await this.contactRepository.findContactWithUserByContactId(contactId);
+
+    if (!contact) {
+      throw new BusinessRuleException(`Contact with ID ${contactId} not found`);
+    }
+
+    const user = contact.users.find((user) => user.id === loggedInUser.id);
+    if (!user) {
+      throw new BusinessRuleException(
+        `User with ID ${loggedInUser.id} not associated with this contact`,
+      );
+    }
+
+    contact.users = contact.users.filter((u) => u.id !== loggedInUser.id);
+
+    await this.contactRepository.saveContact(contact);
   }
 }

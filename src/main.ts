@@ -10,6 +10,11 @@ import * as basicAuth from 'express-basic-auth';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use((req, res, next) => {
+    console.log(`Incoming Request: ${req.method} ${req.url}`);
+    console.log('Request Body:', req.body);
+    next();
+  });
   app.setGlobalPrefix(`${ENDPOINT_PREFIX}`);
   console.log(process.env.DATABASE_URL, process.env.PORT);
   app.enableVersioning({
